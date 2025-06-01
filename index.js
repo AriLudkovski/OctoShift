@@ -33,6 +33,7 @@ function saveSchedule(schedule) {
 }
 const teams = ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"];
 const recentlyNotifiedMatches = new Set();
+
 //recieving match data
 receiver.router.post("/webhook", async (req, res) => {
   if (req.body.token == process.env.NEXUS_TOKEN) {
@@ -139,8 +140,30 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
   );
 });
 
-app.event("app_mention", async ({ event, say }) => {
-  await say(`I am ready to print the current scouting schedule for an event!`);
+app.event("app_mention", async ({ event, client }) => {
+  await client.chat.postMessage({
+    channel: event.channel,
+    text: `👋 Hello, <@${event.user}>!`,
+  });
+});
+//redirect url
+app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
+  const code = req.query.code;
+
+  try {
+    const result = await app.client.oauth.v2.access({
+      client_id: process.env.SLACK_CLIENT_ID,
+      client_secret: process.env.SLACK_CLIENT_SECRET,
+      code, //,
+      //redirect_uri: process.env.SLACK_REDIRECT_URI, // Same as configured below
+    });
+
+    console.log("OAuth success:", result);
+    res.send("✅ Slack app installed successfully!");
+  } catch (error) {
+    console.error("OAuth error:", error);
+    res.status(500).send("⚠️ OAuth failed.");
+  }
 });
 // Start your app
 (async () => {
