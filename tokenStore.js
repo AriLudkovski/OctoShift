@@ -3,7 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const storePath = path.join(__dirname, "tokens.json");
+const storePath = path.join(__dirname, "/tokens.json");
 
 // Load tokens from file (if it exists)
 let tokenStore = {};
@@ -18,13 +18,13 @@ function saveStore() {
 
 // Save token for a team ID
 function saveTokenForTeam(teamId, token) {
-  tokenStore[teamId] = token;
+  tokenStore[teamId].botToken = token;
   saveStore();
 }
 
 // Get token for a team ID
 function getTokenForTeam(teamId) {
-  return tokenStore[teamId];
+  return tokenStore[teamId].botToken;
 }
 
 function saveChannelForTeam(teamId, channelId) {

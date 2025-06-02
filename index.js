@@ -157,7 +157,8 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
 
 app.event("app_mention", async ({ event, client }) => {
   const token = getTokenForTeam(event.team);
-
+  console.log("Team: ", event.team);
+  console.log("Token: ", token);
   const result = await client.chat.postMessage({
     token,
     channel: event.channel,
