@@ -37,7 +37,15 @@ function getChannelForTeam(teamId) {
   return tokenStore[teamId]?.channelId || null;
 }
 
+function getAllTokens() {
+  if (!fs.existsSync(tokenPath)) return {};
+  return JSON.parse(fs.readFileSync(tokenPath, "utf8"));
+}
+
 module.exports = {
   saveTokenForTeam,
   getTokenForTeam,
+  saveChannelForTeam,
+  getChannelForTeam,
+  getAllTokens,
 };

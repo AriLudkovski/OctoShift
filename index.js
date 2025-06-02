@@ -6,6 +6,7 @@ const {
   saveTokenForTeam,
   saveChannelForTeam,
   getChannelForTeam,
+  getAllTokens,
 } = require("./tokenStore");
 const schedulePath = path.join(__dirname, "schedule.json");
 const { App, ExpressReceiver } = require("@slack/bolt");
@@ -48,58 +49,57 @@ receiver.router.post("/webhook", async (req, res) => {
     return;
   }
 
-  const teamId = event.team;
-  const token = getTokenForTeam(teamId);
-  const channel = getChannelForTeam(teamId);
-
-  if (!token || !channel) {
-    console.warn("Missing token or channel for team", teamId);
-    return;
-  }
   let payload = req.body;
   let schedule = loadSchedule();
   let message = "";
   // Log or handle the webhook payload
   console.log("Webhook received: Now Queuing", payload.nowQueuing);
+
+  if (!token || !channel) {
+    console.warn("Missing token or channel for team", teamId);
+    return;
+  }
   if (payload.nowQueuing.match("Qualification")) {
-    for (let i = 0; i < schedule.length; i++) {
-      if (
-        schedule[i].start ==
-          parseInt(payload.nowQueuing.match(/\d+$/)?.[0], 10) &&
-        !recentlyNotifiedMatches.has(i)
-      ) {
-        //prevent duplicates
-        recentlyNotifiedMatches.add(i);
-        setTimeout(() => {
-          recentlyNotifiedMatches.delete(i);
-        }, 30 * 1000);
+    const tokenStore = getAllTokens();
+    for (const team in tokenStore) {
+      for (let i = 0; i < schedule.length; i++) {
+        if (
+          schedule[i].start ==
+            parseInt(payload.nowQueuing.match(/\d+$/)?.[0], 10) &&
+          !recentlyNotifiedMatches.has(i)
+        ) {
+          //prevent duplicates
+          recentlyNotifiedMatches.add(i);
+          setTimeout(() => {
+            recentlyNotifiedMatches.delete(i);
+          }, 30 * 1000);
 
-        //ping starting people
-        assignments = schedule[i].assignments;
-        message += `Prepare to scout starting with match ${schedule[i].start} until match ${schedule[i].end} \n`;
-        for (let j = 0; j < teams.length; j++) {
-          if (j == 3) {
-            message += `\n`;
+          //ping starting people
+          assignments = schedule[i].assignments;
+          message += `Prepare to scout starting with match ${schedule[i].start} until match ${schedule[i].end} \n`;
+          for (let j = 0; j < teams.length; j++) {
+            if (j == 3) {
+              message += `\n`;
+            }
+            if (j < 3) {
+              message += `🟦`;
+            } else {
+              message += `🟥`;
+            }
+            message += `${teams[j]}: `;
+            if (assignments[teams[j]]) {
+              message += `<@${assignments[teams[j]]}>\t`;
+            } else {
+              message += `none\t`;
+            }
           }
-          if (j < 3) {
-            message += `🟦`;
-          } else {
-            message += `🟥`;
-          }
-          message += `${teams[j]}: `;
-          if (assignments[teams[j]]) {
-            message += `<@${assignments[teams[j]]}>\t`;
-          } else {
-            message += `none\t`;
-          }
+          const { token, channel } = tokenStore[team];
+          await app.client.chat.postMessage({
+            token,
+            channel,
+            text: message,
+          });
         }
-        console.log(i);
-
-        await app.client.chat.postMessage({
-          token,
-          channel,
-          text: message,
-        });
       }
     }
   }
@@ -156,15 +156,16 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
 });
 
 app.event("app_mention", async ({ event, client }) => {
-  console.log(event);
-  console.log(event.channel);
   const token = getTokenForTeam(event.team);
 
-  await client.chat.postMessage({
+  const result = await client.chat.postMessage({
     token,
     channel: event.channel,
     text: `👋 Hello, <@${event.user}>!`,
   });
+  if (!result.ok) {
+    console.err("slack api error: ", result.error);
+  }
 });
 //redirect url
 app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
