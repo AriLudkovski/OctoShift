@@ -1,6 +1,12 @@
 require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
+const {
+  getTokenForTeam,
+  saveTokenForTeam,
+  saveChannelForTeam,
+  getChannelForTeam,
+} = require("./tokenStore");
 const schedulePath = path.join(__dirname, "schedule.json");
 const { App, ExpressReceiver } = require("@slack/bolt");
 const express = require("express");
@@ -39,6 +45,15 @@ receiver.router.post("/webhook", async (req, res) => {
   if (req.body.token == process.env.NEXUS_TOKEN) {
     res.status(200).send("OK");
     console.log("token confirmed");
+    return;
+  }
+
+  const teamId = event.team;
+  const token = getTokenForTeam(teamId);
+  const channel = getChannelForTeam(teamId);
+
+  if (!token || !channel) {
+    console.warn("Missing token or channel for team", teamId);
     return;
   }
   let payload = req.body;
@@ -81,8 +96,8 @@ receiver.router.post("/webhook", async (req, res) => {
         console.log(i);
 
         await app.client.chat.postMessage({
-          token: process.env.SLACK_BOT_TOKEN,
-          channel: "C08SLASV0NP",
+          token,
+          channel,
           text: message,
         });
       }
@@ -141,7 +156,12 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
 });
 
 app.event("app_mention", async ({ event, client }) => {
+  console.log(event);
+  console.log(event.channel);
+  const token = getTokenForTeam(event.team);
+
   await client.chat.postMessage({
+    token,
     channel: event.channel,
     text: `👋 Hello, <@${event.user}>!`,
   });
@@ -158,12 +178,30 @@ app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
       //redirect_uri: process.env.SLACK_REDIRECT_URI, // Same as configured below
     });
 
+    const botToken = result.access_token;
+    const teamId = result.team.id;
+
+    saveTokenForTeam(teamId, botToken);
     console.log("OAuth success:", result);
     res.send("✅ Slack app installed successfully!");
   } catch (error) {
     console.error("OAuth error:", error);
     res.status(500).send("⚠️ OAuth failed.");
   }
+});
+
+app.command("/setchannel", async ({ command, ack, respond }) => {
+  await ack();
+
+  const teamId = command.team_id;
+  const channelId = command.channel_id;
+
+  saveChannelForTeam(teamId, channelId);
+
+  await respond({
+    text: `✅ Default channel for team ${teamId} set to <#${channelId}>`,
+    response_type: "ephemeral",
+  });
 });
 // Start your app
 (async () => {
