@@ -43,10 +43,14 @@ const recentlyNotifiedMatches = new Set();
 
 //recieving match data
 receiver.router.post("/webhook", async (req, res) => {
-  if (req.body.token == process.env.NEXUS_TOKEN) {
-    res.status(200).send("OK");
-    console.log("token confirmed");
-    return;
+  try {
+    if (req.body.token == process.env.NEXUS_TOKEN) {
+      res.status(200).send("OK");
+      console.log("token confirmed");
+      return;
+    }
+  } catch (e) {
+    console.log("yipee");
   }
 
   let payload = req.body;
@@ -55,25 +59,22 @@ receiver.router.post("/webhook", async (req, res) => {
   // Log or handle the webhook payload
   console.log("Webhook received: Now Queuing", payload.nowQueuing);
 
-  if (!token || !channel) {
-    console.warn("Missing token or channel for team", teamId);
-    return;
-  }
-  if (payload.nowQueuing.match("Qualification")) {
+  if (
+    payload.nowQueuing.match("Qualification") &&
+    !recentlyNotifiedMatches.has(payload.nowQueuing)
+  ) {
+    //prevent duplicates
+    recentlyNotifiedMatches.add(payload.nowQueuing);
+    setTimeout(() => {
+      recentlyNotifiedMatches.delete(payload.nowQueuing);
+    }, 30 * 1000);
     const tokenStore = getAllTokens();
     for (const team in tokenStore) {
       for (let i = 0; i < schedule.length; i++) {
         if (
           schedule[i].start ==
-            parseInt(payload.nowQueuing.match(/\d+$/)?.[0], 10) &&
-          !recentlyNotifiedMatches.has(i)
+          parseInt(payload.nowQueuing.match(/\d+$/)?.[0], 10)
         ) {
-          //prevent duplicates
-          recentlyNotifiedMatches.add(i);
-          setTimeout(() => {
-            recentlyNotifiedMatches.delete(i);
-          }, 30 * 1000);
-
           //ping starting people
           assignments = schedule[i].assignments;
           message += `Prepare to scout starting with match ${schedule[i].start} until match ${schedule[i].end} \n`;
@@ -93,12 +94,21 @@ receiver.router.post("/webhook", async (req, res) => {
               message += `none\t`;
             }
           }
-          const { token, channel } = tokenStore[team];
-          await app.client.chat.postMessage({
-            token,
-            channel,
-            text: message,
-          });
+          const token = tokenStore[team].botToken;
+          const channel = tokenStore[team].channelId;
+          console.log(token);
+          console.log(channel);
+          if (!token || !channel) {
+            console.warn("Missing token or channel for team", team);
+          } else {
+            console.log("attempted to send");
+            await app.client.chat.postMessage({
+              token,
+              channel,
+              text: message,
+            });
+            console.log(`sent to ${team}`);
+          }
         }
       }
     }

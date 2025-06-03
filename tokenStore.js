@@ -38,8 +38,8 @@ function getChannelForTeam(teamId) {
 }
 
 function getAllTokens() {
-  if (!fs.existsSync(tokenPath)) return {};
-  return JSON.parse(fs.readFileSync(tokenPath, "utf8"));
+  if (!fs.existsSync(storePath)) return {};
+  return JSON.parse(fs.readFileSync(storePath, "utf8"));
 }
 
 module.exports = {
