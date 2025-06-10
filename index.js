@@ -118,8 +118,8 @@ receiver.router.post("/webhook", async (req, res) => {
 //make sure the data gets entered properly
 const allowedRoles = ["red_1", "red_2", "red_3", "blue_1", "blue_2", "blue_3"];
 app.command("/scout-assign", async ({ command, ack, respond }) => {
+  console.log("recieved command: scout-assign: ", command.text);
   await ack();
-
   const args = command.text.trim().split(/\s+/);
   if (args.length !== 3) {
     return respond("Usage: `/scout-assign 1-10 blue_1 @user`");
@@ -217,6 +217,6 @@ app.command("/setchannel", async ({ command, ack, respond }) => {
 });
 // Start your app
 (async () => {
-  await app.start(3000);
+  await app.start(3001);
   console.log("⚡️ Bolt app is running!");
 })();
