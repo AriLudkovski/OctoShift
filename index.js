@@ -134,7 +134,7 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
     .replace("_", " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
   const teamId = command.team_id;
-  if (!allowedRoles.includes(role.toLowerCase())) {
+  if (!allowedRoles.includes(rawRole.toLowerCase())) {
     return respond(
       `❌ Invalid role "${rawRole}". Please use one of: ${allowedRoles.join(
         ", "
