@@ -185,21 +185,19 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
     team
   )}\n🟦Blue 1\t🟦Blue 2\t🟦Blue 3\t🟥Red 1\t🟥Red 2\t🟥Red 3\n`;
 
-  for (block in schedule) {
+  for (const block of schedule) {
     const assignments = block.assignments;
     if (block.team == team) {
-      message += `${assignments["Blue 1"] || none}\t${
-        assignments["Blue 2"] || none
-      }\t${assignments["Blue 3"] || none}\t${assignments["Red 1"] || none}\t${
-        assignments["Red 2"] || none
-      }\t${assignments["Red 3"] || none}\n`;
+      message += `${assignments["Blue 1"] || "none"}\t${
+        assignments["Blue 2"] || "none"
+      }\t${assignments["Blue 3"] || "none"}\t${
+        assignments["Red 1"] || "none"
+      }\t${assignments["Red 2"] || "none"}\t${
+        assignments["Red 3"] || "none"
+      }\n`;
     }
   }
-  await say({
-    text: message,
-    channel: command.channel_id,
-    token: getTokenForTeam(command.team_id),
-  });
+  await say(message);
 });
 
 app.event("app_mention", async ({ event, client }) => {
