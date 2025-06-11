@@ -198,6 +198,7 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
   await say({
     text: message,
     channel: command.channel_id,
+    token: getTokenForTeam(command.team_id),
   });
 });
 
