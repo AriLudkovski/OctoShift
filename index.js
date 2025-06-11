@@ -212,11 +212,11 @@ app.command("/set-channel", async ({ command, ack, respond }) => {
 
   const teamId = command.team_id;
   const channelId = command.channel_id;
-
+  const name = tokenStore[teamId].name;
   saveChannelForTeam(teamId, channelId);
 
   await respond({
-    text: `✅ Default channel for team ${teamId} set to <#${channelId}>`,
+    text: `✅ Default channel for team ${name} set to <#${channelId}>`,
     response_type: "ephemeral",
   });
 });
