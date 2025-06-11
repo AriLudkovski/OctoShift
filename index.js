@@ -19,7 +19,11 @@ const receiver = new ExpressReceiver({
 });
 receiver.router.use(express.json());
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
+  authorize: async ({ teamId }) => {
+    const token = getTokenForTeam(teamId);
+    if (!token) throw new Error("No token found for team");
+    return { botToken: token };
+  },
   receiver,
 });
 //loading schedule
