@@ -169,6 +169,34 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
   );
 });
 
+app.command("/print-schedule", async ({ command, ack, say }) => {
+  await ack();
+  console.log("recieved command: print schedule");
+  let schedule = loadSchedule();
+  const team = command.team_id;
+  const hasBlocks = schedule.some((block) => block.team === team);
+  if (!hasBlocks) {
+    say(`No schedule for ${getNameForTeam(team)}`);
+    return;
+  }
+  schedule.sort((a, b) => a.start - b.start);
+
+  let message = `Printing scouting schedule for ${getNameForTeam(
+    team
+  )}\n🟦Blue 1\t🟦Blue 2\t🟦Blue 3\t🟥Red 1\t🟥Red 2\t🟥Red 3\n`;
+  const assignments = block.assignments;
+  for (block in schedule) {
+    if (block.team == team) {
+      message += `${assignments["Blue 1"] || none}\t${
+        assignments["Blue 2"] || none
+      }\t${assignments["Blue 3"] || none}\t${assignments["Red 1"] || none}\t${
+        assignments["Red 2"] || none
+      }\t${assignments["Red 3"] || none}\n`;
+    }
+  }
+  say(message);
+});
+
 app.event("app_mention", async ({ event, client }) => {
   const token = getTokenForTeam(event.team);
   console.log("Team: ", event.team);
@@ -207,7 +235,6 @@ app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
     res.status(500).send("⚠️ OAuth failed.");
   }
 });
-
 app.command("/set-channel", async ({ command, ack, respond }) => {
   console.log("recieved: set-channel");
   await ack();
