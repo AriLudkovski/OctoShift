@@ -184,8 +184,9 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
   let message = `Printing scouting schedule for ${getNameForTeam(
     team
   )}\n🟦Blue 1\t🟦Blue 2\t🟦Blue 3\t🟥Red 1\t🟥Red 2\t🟥Red 3\n`;
-  const assignments = block.assignments;
+
   for (block in schedule) {
+    const assignments = block.assignments;
     if (block.team == team) {
       message += `${assignments["Blue 1"] || none}\t${
         assignments["Blue 2"] || none
