@@ -183,61 +183,25 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
     say(`No schedule for ${getNameForTeam(team)}`);
     return;
   }
-  const blocks = [];
+  schedule.sort((a, b) => a.start - b.start);
 
-  // Header row (fields)
-  blocks.push({
-    type: "section",
-    fields: [
-      { type: "mrkdwn", text: "*🟦Blue 1*" },
-      { type: "mrkdwn", text: "*🟦Blue 2*" },
-      { type: "mrkdwn", text: "*🟦Blue 3*" },
-      { type: "mrkdwn", text: "*🟥Red 1*" },
-      { type: "mrkdwn", text: "*🟥Red 2*" },
-      { type: "mrkdwn", text: "*🟥Red 3*" },
-    ],
-  });
+  let message = `Printing scouting schedule for ${getNameForTeam(
+    team
+  )}\n🟦Blue 1\t🟦Blue 2\t🟦Blue 3\t🟥Red 1\t🟥Red 2\t🟥Red 3\n`;
 
-  // Then add one section block per schedule block for assignments
   for (const block of schedule) {
-    if (block.team !== team) continue;
     const assignments = block.assignments;
-
-    blocks.push({
-      type: "section",
-      fields: [
-        {
-          type: "mrkdwn",
-          text: assignments["Blue 1"] ? `<@${assignments["Blue 1"]}>` : "none",
-        },
-        {
-          type: "mrkdwn",
-          text: assignments["Blue 2"] ? `<@${assignments["Blue 2"]}>` : "none",
-        },
-        {
-          type: "mrkdwn",
-          text: assignments["Blue 3"] ? `<@${assignments["Blue 3"]}>` : "none",
-        },
-        {
-          type: "mrkdwn",
-          text: assignments["Red 1"] ? `<@${assignments["Red 1"]}>` : "none",
-        },
-        {
-          type: "mrkdwn",
-          text: assignments["Red 2"] ? `<@${assignments["Red 2"]}>` : "none",
-        },
-        {
-          type: "mrkdwn",
-          text: assignments["Red 3"] ? `<@${assignments["Red 3"]}>` : "none",
-        },
-      ],
-    });
+    if (block.team == team) {
+      message += `${assignments["Blue 1"] || "none"}\t${
+        assignments["Blue 2"] || "none"
+      }\t${assignments["Blue 3"] || "none"}\t${
+        assignments["Red 1"] || "none"
+      }\t${assignments["Red 2"] || "none"}\t${
+        assignments["Red 3"] || "none"
+      }\n`;
+    }
   }
-
-  await say({
-    blocks,
-    text: `Scouting schedule for ${getNameForTeam(team)}`, // fallback text
-  });
+  await say(message);
 });
 
 app.event("app_mention", async ({ event, client }) => {
