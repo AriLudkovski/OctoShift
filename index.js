@@ -195,7 +195,10 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
       }\t${assignments["Red 3"] || none}\n`;
     }
   }
-  say(message);
+  await say({
+    text: message,
+    channel: command.channel_id,
+  });
 });
 
 app.event("app_mention", async ({ event, client }) => {
