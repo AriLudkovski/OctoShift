@@ -6,6 +6,8 @@ const {
   saveTokenForTeam,
   saveChannelForTeam,
   getChannelForTeam,
+  saveNameForTeam,
+  getNameForTeam,
   getAllTokens,
 } = require("./tokenStore");
 const schedulePath = path.join(__dirname, "schedule.json");
@@ -192,8 +194,10 @@ app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
 
     const botToken = result.access_token;
     const teamId = result.team.id;
+    const teamName = result.team.name;
 
     saveTokenForTeam(teamId, botToken);
+    saveNameForTeam(teamId, teamName);
     console.log("OAuth success:", result);
     res.send("✅ Slack app installed successfully!");
   } catch (error) {
@@ -202,7 +206,8 @@ app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
   }
 });
 
-app.command("/setchannel", async ({ command, ack, respond }) => {
+app.command("/set-channel", async ({ command, ack, respond }) => {
+  console.log("recieved: set-channel");
   await ack();
 
   const teamId = command.team_id;

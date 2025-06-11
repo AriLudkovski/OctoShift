@@ -37,12 +37,26 @@ function getChannelForTeam(teamId) {
   return tokenStore[teamId]?.channelId || null;
 }
 
+//get name for team id
+function getNameForTeam(teamId) {
+  return tokenStore[teamId]?.name || null;
+}
+
+//save name for team id
+function saveNameForTeam(teamId, teamName) {
+  if (!tokenStore[teamId]) tokenStore[teamId] = {};
+  tokenStore[teamId].name = teamName;
+  saveStore();
+}
+
 function getAllTokens() {
   if (!fs.existsSync(storePath)) return {};
   return JSON.parse(fs.readFileSync(storePath, "utf8"));
 }
 
 module.exports = {
+  saveNameForTeam,
+  getNameForTeam,
   saveTokenForTeam,
   getTokenForTeam,
   saveChannelForTeam,
