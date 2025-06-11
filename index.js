@@ -75,7 +75,8 @@ receiver.router.post("/webhook", async (req, res) => {
       for (let i = 0; i < schedule.length; i++) {
         if (
           schedule[i].start ==
-          parseInt(payload.nowQueuing.match(/\d+$/)?.[0], 10)
+            parseInt(payload.nowQueuing.match(/\d+$/)?.[0], 10) &&
+          schedule[i].team == team
         ) {
           //ping starting people
           assignments = schedule[i].assignments;
@@ -127,8 +128,12 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
     return respond("Usage: `/scout-assign 1-10 blue_1 @user`");
   }
 
-  const [rangeStr, role, mention] = args;
-
+  const [rangeStr, rawRole, mention] = args;
+  const role = rawRole
+    .toLowerCase()
+    .replace("_", " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const teamId = command.team_id;
   if (!allowedRoles.includes(role.toLowerCase())) {
     return respond(
       `❌ Invalid role "${rawRole}". Please use one of: ${allowedRoles.join(
@@ -148,18 +153,15 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
 
   // Load and update schedule
   const schedule = loadSchedule();
-  let block = schedule.find((b) => b.start === start && b.end === end);
+  let block = schedule.find(
+    (b) => b.start === start && b.end === end && b.team == teamId
+  );
   if (!block) {
-    block = { start: start, end: end, assignments: {} };
+    block = { start: start, end: end, assignments: {}, team: teamId };
     schedule.push(block);
   }
 
-  block.assignments[
-    role
-      .toLowerCase()
-      .replace("_", " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase())
-  ] = userId;
+  block.assignments[role] = userId;
   saveSchedule(schedule);
 
   respond(
