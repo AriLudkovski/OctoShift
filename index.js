@@ -212,7 +212,7 @@ app.command("/set-channel", async ({ command, ack, respond }) => {
 
   const teamId = command.team_id;
   const channelId = command.channel_id;
-  const name = tokenStore[teamId].name;
+  const name = getNameForTeam(teamId);
   saveChannelForTeam(teamId, channelId);
 
   await respond({
