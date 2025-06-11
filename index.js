@@ -216,7 +216,9 @@ app.command("/set-channel", async ({ command, ack, respond }) => {
   saveChannelForTeam(teamId, channelId);
 
   await respond({
-    text: `✅ Default channel for team ${name} set to <#${channelId}>`,
+    text: `✅ Default channel for ${
+      name || "Missing name, please reinstall App!!!"
+    } set to <#${channelId}>`,
     response_type: "ephemeral",
   });
 });
