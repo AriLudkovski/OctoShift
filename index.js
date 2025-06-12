@@ -216,12 +216,12 @@ Block        Blue 1        Blue 2        Blue 3        Red 1         Red 2      
     const a = block.assignments;
     const row = [
       pad(`M ${block.start}-${block.end}`, 12),
-      pad(getDisplayName(a["Blue 1"])),
-      pad(getDisplayName(a["Blue 2"])),
-      pad(getDisplayName(a["Blue 3"])),
-      pad(getDisplayName(a["Red 1"])),
-      pad(getDisplayName(a["Red 2"])),
-      pad(getDisplayName(a["Red 3"])),
+      pad(await getDisplayName(a["Blue 1"])),
+      pad(await getDisplayName(a["Blue 2"])),
+      pad(await getDisplayName(a["Blue 3"])),
+      pad(await getDisplayName(a["Red 1"])),
+      pad(await getDisplayName(a["Red 2"])),
+      pad(await getDisplayName(a["Red 3"])),
     ].join("");
 
     message += `\n${row}`;
