@@ -190,7 +190,7 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
   }
 
   function pad(str, len = 14) {
-    return str.padEnd(len);
+    return str.length >= len ? str.slice(0, len - 1) + "…" : str.padEnd(len);
   }
 
   let message = `\`\`\`
