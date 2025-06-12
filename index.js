@@ -186,7 +186,10 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
   schedule.sort((a, b) => a.start - b.start);
   async function getDisplayName(userId) {
     try {
-      const result = await app.client.users.info({ user: userId });
+      const result = await app.client.users.info({
+        user: userId,
+        token: getTokenForTeam(team),
+      });
       const name =
         result.user?.profile?.display_name ||
         result.user?.real_name ||
