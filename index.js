@@ -185,22 +185,39 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
   }
   schedule.sort((a, b) => a.start - b.start);
 
-  let message = `Printing scouting schedule for ${getNameForTeam(
-    team
-  )}\n🟦Blue 1\t🟦Blue 2\t🟦Blue 3\t🟥Red 1\t🟥Red 2\t🟥Red 3\n`;
+  function mentionOrNone(userId) {
+    return userId ? `<@${userId}>` : "none";
+  }
+
+  function pad(str, len = 14) {
+    return str.padEnd(len);
+  }
+
+  let message = `\`\`\`
+Scouting Schedule for ${getNameForTeam(team)}
+
+Block        Blue 1        Blue 2        Blue 3        Red 1         Red 2         Red 3
+-----------------------------------------------------------------------------------------`;
 
   for (const block of schedule) {
-    const assignments = block.assignments;
-    if (block.team == team) {
-      message += `${assignments["Blue 1"] || "none"}\t${
-        assignments["Blue 2"] || "none"
-      }\t${assignments["Blue 3"] || "none"}\t${
-        assignments["Red 1"] || "none"
-      }\t${assignments["Red 2"] || "none"}\t${
-        assignments["Red 3"] || "none"
-      }\n`;
-    }
+    if (block.team !== team) continue;
+
+    const a = block.assignments;
+    const row = [
+      pad(`${a.start} -  ${a.end}`),
+      pad(mentionOrNone(a["Blue 1"])),
+      pad(mentionOrNone(a["Blue 2"])),
+      pad(mentionOrNone(a["Blue 3"])),
+      pad(mentionOrNone(a["Red 1"])),
+      pad(mentionOrNone(a["Red 2"])),
+      pad(mentionOrNone(a["Red 3"])),
+    ].join("");
+
+    message += `\n${row}`;
   }
+
+  message += `\n\`\`\``;
+
   await say(message);
 });
 
