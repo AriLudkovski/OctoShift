@@ -1,4 +1,5 @@
 require("dotenv").config();
+const { createCanvas, loadImage } = require("canvas");
 const fs = require("fs");
 const path = require("path");
 const {
@@ -172,10 +173,69 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
     `✅ Assigned <@${userId}> to *${role.toUpperCase()}* for matches ${start}-${end}`
   );
 });
+async function getDisplayName(userId) {
+  try {
+    const result = await app.client.users.info({
+      user: userId,
+      token: getTokenForTeam(team),
+    });
+    const name =
+      result.user?.profile?.display_name || result.user?.real_name || "unknown";
+    return name;
+  } catch (e) {
+    console.error(`Failed to fetch user ${userId}:`, e);
+    return "unknown";
+  }
+}
 
-app.command("/print-schedule", async ({ command, ack, say }) => {
+function generateScheduleImage(schedule, team) {
+  const width = 800;
+  const height = 200 + 30 * schedule.length;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext("2d");
+
+  // Background
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, width, height);
+
+  // Text style
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+
+  // Header
+  const header =
+    "⬛Block      🟦Blue 1      🟦Blue 2      🟦Blue 3      🟥Red 1      🟥Red 2      🟥Red 3";
+  ctx.fillText(header, 10, 30);
+
+  // Draw line below header
+  ctx.beginPath();
+  ctx.moveTo(10, 40);
+  ctx.lineTo(width - 10, 40);
+  ctx.stroke();
+
+  // Draw schedule rows
+  let y = 70;
+  schedule.forEach((block) => {
+    if (block.teamId == team) {
+      let row = `M ${block.start}-${block.end}      `;
+      ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"].forEach(
+        (role) => {
+          const name = block.assignments[role] || "none";
+          row += name.padEnd(12, " ") + "  ";
+        }
+      );
+      ctx.fillText(row, 10, y);
+      y += 30;
+    }
+  });
+
+  // Save to file or return buffer
+  return canvas.toBuffer();
+}
+
+app.command("/print-schedule", async ({ command, ack, client }) => {
   await ack();
-  console.log("recieved command: print schedule");
+  console.log("received command: print schedule");
   let schedule = loadSchedule();
   const team = command.team_id;
   const hasBlocks = schedule.some((block) => block.team === team);
@@ -184,52 +244,21 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
     return;
   }
   schedule.sort((a, b) => a.start - b.start);
-  async function getDisplayName(userId) {
-    try {
-      const result = await app.client.users.info({
-        user: userId,
-        token: getTokenForTeam(team),
-      });
-      const name =
-        result.user?.profile?.display_name ||
-        result.user?.real_name ||
-        "unknown";
-      return name;
-    } catch (e) {
-      console.error(`Failed to fetch user ${userId}:`, e);
-      return "unknown";
-    }
+  let image = generateScheduleImage(schedule, team);
+  try {
+    const result = await client.files.upload({
+      channels: getChannelForTeam(team), // where to post it
+      initial_comment: "Here is the scouting schedule 🧠📋",
+      filename: "schedule.png",
+      filetype: "png",
+      title: "Scouting Schedule",
+      file: image, // this is your image
+    });
+
+    console.log("File uploaded:", result.file.id);
+  } catch (error) {
+    console.error("File upload failed:", error);
   }
-  function pad(str, len = 14) {
-    return str.length >= len ? str.slice(0, len - 1) + "…" : str.padEnd(len);
-  }
-
-  let message = `\`\`\`
-Scouting Schedule for ${getNameForTeam(team)}
-
-Block        Blue 1        Blue 2        Blue 3        Red 1         Red 2         Red 3
------------------------------------------------------------------------------------------`;
-
-  for (const block of schedule) {
-    if (block.team !== team) continue;
-
-    const a = block.assignments;
-    const row = [
-      pad(`M ${block.start}-${block.end}`, 12),
-      pad(await getDisplayName(a["Blue 1"])),
-      pad(await getDisplayName(a["Blue 2"])),
-      pad(await getDisplayName(a["Blue 3"])),
-      pad(await getDisplayName(a["Red 1"])),
-      pad(await getDisplayName(a["Red 2"])),
-      pad(await getDisplayName(a["Red 3"])),
-    ].join("");
-
-    message += `\n${row}`;
-  }
-
-  message += `\n\`\`\``;
-
-  await say(message);
 });
 
 app.event("app_mention", async ({ event, client }) => {
