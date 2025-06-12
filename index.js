@@ -1,4 +1,6 @@
 require("dotenv").config();
+const sharp = require("sharp");
+const Jimp = require("jimp");
 const fs = require("fs");
 const path = require("path");
 const {
@@ -187,49 +189,53 @@ async function getDisplayName(userId) {
   }
 }
 
-function generateScheduleImage(schedule, team) {
+async function generateScheduleImage(schedule, team) {
   const width = 800;
-  const height = 200 + 30 * schedule.length;
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext("2d");
+  const height = 400;
+  const image = new Jimp(width, height, "#ffffff");
 
-  // Background
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, width, height);
+  const font = await Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
+  let y = 20;
 
-  // Text style
-  ctx.fillStyle = "black";
-  ctx.font = "20px Arial";
+  image.print(font, 20, y, "Scouting Schedule");
+  y += 30;
 
-  // Header
-  const header =
-    "⬛Block      🟦Blue 1      🟦Blue 2      🟦Blue 3      🟥Red 1      🟥Red 2      🟥Red 3";
-  ctx.fillText(header, 10, 30);
-
-  // Draw line below header
-  ctx.beginPath();
-  ctx.moveTo(10, 40);
-  ctx.lineTo(width - 10, 40);
-  ctx.stroke();
-
-  // Draw schedule rows
-  let y = 70;
-  schedule.forEach((block) => {
-    if (block.teamId == team) {
-      let row = `M ${block.start}-${block.end}      `;
-      ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"].forEach(
-        (role) => {
-          const name = block.assignments[role] || "none";
-          row += name.padEnd(12, " ") + "  ";
-        }
-      );
-      ctx.fillText(row, 10, y);
-      y += 30;
-    }
+  // Draw headers
+  const headers = [
+    "Block",
+    "Blue 1",
+    "Blue 2",
+    "Blue 3",
+    "Red 1",
+    "Red 2",
+    "Red 3",
+  ];
+  headers.forEach((header, i) => {
+    image.print(font, 20 + i * 100, y, header);
   });
 
-  // Save to file or return buffer
-  return canvas.toBuffer();
+  y += 30;
+
+  // Draw rows
+  schedule.forEach((block) => {
+    if (block.teamId == team) {
+      const row = [
+        `${block.start}-${block.end}`,
+        block.assignments["Blue 1"] || "none",
+        block.assignments["Blue 2"] || "none",
+        block.assignments["Blue 3"] || "none",
+        block.assignments["Red 1"] || "none",
+        block.assignments["Red 2"] || "none",
+        block.assignments["Red 3"] || "none",
+      ];
+      row.forEach((val, i) => {
+        image.print(font, 20 + i * 100, y, val);
+      });
+    }
+    y += 25;
+  });
+
+  return image;
 }
 
 app.command("/print-schedule", async ({ command, ack, client }) => {
@@ -243,7 +249,7 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
     return;
   }
   schedule.sort((a, b) => a.start - b.start);
-  let image = generateScheduleImage(schedule, team);
+  let image = await generateScheduleImage(schedule, team);
   try {
     const result = await client.files.upload({
       channels: getChannelForTeam(team), // where to post it
