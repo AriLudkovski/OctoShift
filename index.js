@@ -238,21 +238,21 @@ async function generateScheduleImage(schedule, team) {
   return image;
 }
 
-app.command("/print-schedule", async ({ command, ack, client }) => {
+app.command("/print-schedule", async ({ command, ack, client, respond }) => {
   await ack();
   console.log("received command: print schedule");
   let schedule = loadSchedule();
   const team = command.team_id;
   const hasBlocks = schedule.some((block) => block.team === team);
   if (!hasBlocks) {
-    say(`No schedule for ${getNameForTeam(team)}`);
+    respond(`No schedule for ${getNameForTeam(team)}`);
     return;
   }
   schedule.sort((a, b) => a.start - b.start);
   let image = await generateScheduleImage(schedule, team);
   try {
-    const result = await client.files.upload({
-      channels: getChannelForTeam(team), // where to post it
+    const result = await client.files.uploadV2({
+      channel_id: getChannelForTeam(team), // where to post it
       initial_comment: "Here is the scouting schedule 🧠📋",
       filename: "schedule.png",
       filetype: "png",
