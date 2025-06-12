@@ -184,11 +184,19 @@ app.command("/print-schedule", async ({ command, ack, say }) => {
     return;
   }
   schedule.sort((a, b) => a.start - b.start);
-
-  function mentionOrNone(userId) {
-    return userId ? `<@${userId}>` : "none";
+  async function getDisplayName(userId) {
+    try {
+      const result = await app.client.users.info({ user: userId });
+      const name =
+        result.user?.profile?.display_name ||
+        result.user?.real_name ||
+        "unknown";
+      return name;
+    } catch (e) {
+      console.error(`Failed to fetch user ${userId}:`, e);
+      return "unknown";
+    }
   }
-
   function pad(str, len = 14) {
     return str.length >= len ? str.slice(0, len - 1) + "…" : str.padEnd(len);
   }
@@ -205,12 +213,12 @@ Block        Blue 1        Blue 2        Blue 3        Red 1         Red 2      
     const a = block.assignments;
     const row = [
       pad(`M ${block.start}-${block.end}`, 12),
-      pad(mentionOrNone(a["Blue 1"])),
-      pad(mentionOrNone(a["Blue 2"])),
-      pad(mentionOrNone(a["Blue 3"])),
-      pad(mentionOrNone(a["Red 1"])),
-      pad(mentionOrNone(a["Red 2"])),
-      pad(mentionOrNone(a["Red 3"])),
+      pad(getDisplayName(a["Blue 1"])),
+      pad(getDisplayName(a["Blue 2"])),
+      pad(getDisplayName(a["Blue 3"])),
+      pad(getDisplayName(a["Red 1"])),
+      pad(getDisplayName(a["Red 2"])),
+      pad(getDisplayName(a["Red 3"])),
     ].join("");
 
     message += `\n${row}`;
