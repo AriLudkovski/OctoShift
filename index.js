@@ -204,7 +204,7 @@ Block        Blue 1        Blue 2        Blue 3        Red 1         Red 2      
 
     const a = block.assignments;
     const row = [
-      pad(`${a.start} -  ${a.end}`),
+      ad(`M ${block.start}-${block.end}`, 12),
       pad(mentionOrNone(a["Blue 1"])),
       pad(mentionOrNone(a["Blue 2"])),
       pad(mentionOrNone(a["Blue 3"])),
