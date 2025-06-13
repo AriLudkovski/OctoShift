@@ -244,12 +244,12 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
 
   try {
     // Upload image file
-    await client.files.upload({
-      channels: command.channel_id,
+    await client.filesUploadV2({
+      channel_id: command.channel_id,
       initial_comment: "Here is the scouting schedule!",
       file: buffer,
       filename: "schedule.png",
-      filetype: "png",
+      filetype: ".png",
     });
   } catch (error) {
     console.error("Failed to upload schedule image:", error);
