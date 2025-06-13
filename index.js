@@ -211,46 +211,36 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
     "in",
     getNameForTeam(command.team_id)
   );
+  const blockMatch = text.match(/block=(\d+)-(\d+)/);
+  if (!blockMatch) {
+    return respond("❌ Please specify a block using `block=10-20`.");
+  }
+  const start = parseInt(rangeMatch[1], 10);
+  const end = parseInt(rangeMatch[2], 10);
+
+  const schedule = loadSchedule();
   const assignments = {};
-  const args = command.text.trim().split(/\s+/);
-  for (const arg of args) {
-    if (!arg.includes("=")) {
+  const roleRegex = /(\w+)=<@([A-Z0-9]+)>/g;
+  let match;
+
+  while ((match = roleRegex.exec(text)) !== null) {
+    const rawKey = match[1].toLowerCase(); // like 'blue_1'
+    const userId = match[2]; // like 'U123ABC456'
+
+    if (!allowedRoles.includes(rawKey)) {
       return respond(
-        `❌ Invalid format. Each argument must be like key=value.`
+        `❌ Invalid role "${rawKey}". Allowed roles: ${allowedRoles.join(", ")}`
       );
     }
 
-    const [key, value] = arg.split("=");
-    console.log("Key:", key);
-    console.log("Value:", value);
-    if (key === "block") {
-      rangeStr = value;
-      const rangeMatch = rangeStr.match(/^(\d+)-(\d+)$/);
+    // Normalize key like blue_1 → Blue 1
+    const normalizedKey = rawKey
+      .replace("_", " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
 
-      if (!rangeMatch) {
-        return respond("❌ Please specify a block, e.g., `block=10-20`.");
-      }
-      const start = parseInt(rangeMatch[1], 10);
-      const end = parseInt(rangeMatch[2], 10);
-    } else {
-      if (!allowedRoles.includes(key.toLowerCase())) {
-        return respond(
-          `❌ Invalid role "${key}". Please use one of: ${allowedRoles.join(
-            ", "
-          )}`
-        );
-      }
-      const normalizedKey = key.replace("_", " "); // e.g., blue_1 → Blue 1
-
-      const match = value.match(/^<@(\w+)>$/);
-      if (match) {
-        assignments[
-          normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1)
-        ] = match[1];
-      }
-    }
+    assignments[normalizedKey] = userId;
   }
-  const schedule = loadSchedule();
+
   let block = schedule.find(
     (b) => b.start === start && b.end === end && b.team == team
   );
@@ -264,7 +254,7 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
     block.assignments[role] = userId;
     message += `${role}: @<${userId}> `;
   }
-
+  saveSchedule();
   message += `to matches ${start}-${end}`;
   respond(message);
 });
