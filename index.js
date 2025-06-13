@@ -145,7 +145,7 @@ app.command("/print-schedule", async ({ command, ack, client, say }) => {
     await client.filesUploadV2({
       channel_id: command.channel_id,
       initial_comment:
-        "Here is the scouting schedule!" + command.text.includes("--ping")
+        `Here is the scouting schedule!` + command.text.includes("--ping")
           ? ` Scouts: <@${users.join("> <@").slice(0, -2)}`
           : "",
       file: buffer,
