@@ -214,14 +214,19 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
   const assignments = {};
   const args = command.text.trim().split(/\s+/);
   for (const arg of args) {
-    const [key, value] = arg.split("=");
+    if (!arg.includes("=")) {
+      return say(`❌ Invalid format. Each argument must be like key=value.`);
+    }
 
+    const [key, value] = arg.split("=");
+    console.log("Key:", key);
+    console.log("Value:", value);
     if (key === "block") {
       rangeStr = value;
       const rangeMatch = rangeStr.match(/^(\d+)-(\d+)$/);
 
       if (!rangeMatch) {
-        return say("❌ Please specify a block, e.g., `block=M10-20`.");
+        return say("❌ Please specify a block, e.g., `block=10-20`.");
       }
       const start = parseInt(rangeMatch[1], 10);
       const end = parseInt(rangeMatch[2], 10);
