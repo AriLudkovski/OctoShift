@@ -249,7 +249,6 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
       initial_comment: "Here is the scouting schedule!",
       file: buffer,
       filename: "schedule.png",
-      filetype: ".png",
     });
   } catch (error) {
     console.error("Failed to upload schedule image:", error);
