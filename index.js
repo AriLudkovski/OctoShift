@@ -275,6 +275,90 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
   respond(message);
 });
 
+app.command("/clear-block", async ({ command, ack, respond }) => {
+  await ack();
+
+  const text = command.text.trim();
+  const rangeMatch = text.match(/^(\d+)-(\d+)$/);
+  if (!rangeMatch || !userMatch) {
+    return respond("❌ Invalid format. Use: `/scout-assign 1-10 blue_1 @user`");
+  }
+
+  const start = parseInt(rangeMatch[1], 10);
+  const end = parseInt(rangeMatch[2], 10);
+
+  respond({
+    text: `⚠️Are you sure you want to delete the schedule for matches *${start}-${end}*? This cannot be undone!⚠️`,
+    blocks: [
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "Yes, delete it",
+            },
+            style: "danger",
+            value: { start: start, end: end },
+            action_id: "confirm_delete_block",
+          },
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "Cancel",
+            },
+            style: "primary",
+            action_id: "cancel_delete_block",
+          },
+        ],
+      },
+    ],
+  });
+});
+
+app.action(
+  "confirm_delete_block",
+  async ({ ack, body, client, say, respond }) => {
+    await ack();
+
+    const teamId = body.team.id;
+    const start = body.value.start;
+    const end = body.value.end;
+
+    const schedule = loadSchedule();
+    let block = schedule.find(
+      (b) => b.start === start && b.end === end && b.team == teamId
+    );
+    if (!block) {
+      respond(`Block ${start}-${end} does not exist!`);
+    } else {
+      const updatedSchedule = schedule.filter(
+        (b) => b.start === start && b.end === end && b.team == teamId
+      );
+      saveSchedule(updatedSchedule);
+      say(
+        `${getDisplayName(
+          body.user.id,
+          teamId
+        )} has deleted block ${start}-${end}`
+      );
+    }
+  }
+);
+app.action("cancel_delete_block", async ({ ack, body, client, say }) => {
+  await ack();
+
+  try {
+    await client.chat.delete({
+      channel: body.channel.id,
+      ts: body.message.ts,
+    });
+  } catch (error) {
+    console.error("Failed to delete message:", error);
+  }
+});
 app.command("/set-channel", async ({ command, ack, respond }) => {
   await ack();
   console.log(
