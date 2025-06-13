@@ -218,7 +218,7 @@ async function generateScheduleImage(schedule, team) {
   let y = 70;
   const len = 12;
   for (const block of schedule) {
-    let row = `M ${block.start}-${block.end}      `.padEnd(len);
+    let row = `M ${block.start}-${block.end}      `.padEnd(len, " ");
     const roles = ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"];
     for (const role of roles) {
       const name = await getDisplayName(block.assignments[role], team);
