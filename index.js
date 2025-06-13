@@ -215,7 +215,9 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
   const args = command.text.trim().split(/\s+/);
   for (const arg of args) {
     if (!arg.includes("=")) {
-      return say(`❌ Invalid format. Each argument must be like key=value.`);
+      return respond(
+        `❌ Invalid format. Each argument must be like key=value.`
+      );
     }
 
     const [key, value] = arg.split("=");
@@ -226,7 +228,7 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
       const rangeMatch = rangeStr.match(/^(\d+)-(\d+)$/);
 
       if (!rangeMatch) {
-        return say("❌ Please specify a block, e.g., `block=10-20`.");
+        return respond("❌ Please specify a block, e.g., `block=10-20`.");
       }
       const start = parseInt(rangeMatch[1], 10);
       const end = parseInt(rangeMatch[2], 10);
