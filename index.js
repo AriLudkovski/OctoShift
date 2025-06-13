@@ -202,6 +202,14 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
 
 app.command("/block-assign", async ({ command, ack, respond }) => {
   await ack();
+  console.log(
+    "recieved command: block-assign: ",
+    command.text,
+    " from ",
+    command.user_name,
+    "in",
+    getNameForTeam(teamId)
+  );
   respond("This command is under construction :arictopus:");
 });
 
