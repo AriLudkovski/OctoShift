@@ -188,7 +188,7 @@ async function getDisplayName(userId) {
   }
 }
 
-async function generateScheduleImage(team) {
+async function generateScheduleImage(schedule) {
   const width = 800;
   const height = 200 + 30 * schedule.length;
   const canvas = createCanvas(width, height);
@@ -216,17 +216,15 @@ async function generateScheduleImage(team) {
   // Draw schedule rows
   let y = 70;
   schedule.forEach((block) => {
-    if (block.teamId == team) {
-      let row = `M ${block.start}-${block.end}      `;
-      ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"].forEach(
-        (role) => {
-          const name = block.assignments[role] || "none";
-          row += name.padEnd(12, " ") + "  ";
-        }
-      );
-      ctx.fillText(row, 10, y);
-      y += 30;
-    }
+    let row = `M ${block.start}-${block.end}      `;
+    ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"].forEach(
+      (role) => {
+        const name = block.assignments[role] || "none";
+        row += name.padEnd(12, " ") + "  ";
+      }
+    );
+    ctx.fillText(row, 10, y);
+    y += 30;
   });
 
   // Save to file or return buffer
@@ -236,9 +234,13 @@ async function generateScheduleImage(team) {
 app.command("/print-schedule", async ({ command, ack, client }) => {
   await ack(); // Ack early to avoid timeout
 
-  team = command.team_id;
+  let team = command.team_id;
+
+  const schedule = loadSchedule();
+
+  var filteredSchedule = schedule.filter((element) => element.team == team);
   // Generate image buffer (could be from your generateScheduleImage function)
-  const buffer = generateScheduleImage(team);
+  const buffer = generateScheduleImage(filteredSchedule);
 
   try {
     // Upload image file
