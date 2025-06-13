@@ -201,7 +201,7 @@ async function generateScheduleImage(schedule, team) {
 
   // Text style
   ctx.fillStyle = "black";
-  ctx.font = "20px Arial";
+  ctx.font = "20px DejaVu Sans Mono";
 
   // Header
   const header =
