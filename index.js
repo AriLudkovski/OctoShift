@@ -190,8 +190,8 @@ async function getDisplayName(userId, team) {
 }
 
 async function generateScheduleImage(schedule, team) {
-  const width = 1000;
-  const height = 200 + 30 * schedule.length;
+  const width = 1050;
+  const height = 75 + 30 * schedule.length;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
 
