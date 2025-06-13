@@ -126,6 +126,7 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
   const schedule = loadSchedule();
 
   var filteredSchedule = schedule.filter((element) => element.team == team);
+  filteredSchedule.sort((a, b) => a.start - b.start);
   // Generate image buffer (could be from your generateScheduleImage function)
   const buffer = await generateScheduleImage(filteredSchedule, team);
 
