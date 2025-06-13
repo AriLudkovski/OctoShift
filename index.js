@@ -205,7 +205,7 @@ async function generateScheduleImage(schedule, team) {
 
   // Header
   const header =
-    "Block       Blue 1       Blue 2      Blue 3      Red 1       Red 2       Red 3";
+    "Block     Blue 1       Blue 2      Blue 3      Red 1       Red 2       Red 3";
   ctx.fillText(header, 10, 30);
 
   // Draw line below header
