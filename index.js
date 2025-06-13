@@ -280,8 +280,8 @@ app.command("/clear-block", async ({ command, ack, respond }) => {
 
   const text = command.text.trim();
   const rangeMatch = text.match(/^(\d+)-(\d+)$/);
-  if (!rangeMatch || !userMatch) {
-    return respond("❌ Invalid format. Use: `/scout-assign 1-10 blue_1 @user`");
+  if (!rangeMatch) {
+    return respond('❌ Invalid format. Please input a block such as "1-10"');
   }
 
   const start = parseInt(rangeMatch[1], 10);
