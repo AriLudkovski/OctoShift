@@ -174,6 +174,7 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
   );
 });
 async function getDisplayName(userId, team) {
+  if (!userId) return "none";
   try {
     const result = await app.client.users.info({
       user: userId,
@@ -204,7 +205,7 @@ async function generateScheduleImage(schedule, team) {
 
   // Header
   const header =
-    "⬛Block      🟦Blue 1      🟦Blue 2      🟦Blue 3      🟥Red 1      🟥Red 2      🟥Red 3";
+    "Block       Blue 1       Blue 2       Blue 3       Red 1       Red 2       Red 3";
   ctx.fillText(header, 10, 30);
 
   // Draw line below header
@@ -220,7 +221,11 @@ async function generateScheduleImage(schedule, team) {
     const roles = ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"];
     for (const role of roles) {
       const name = await getDisplayName(block.assignments[role], team);
-      row += name.padEnd(12, " ") + "  ";
+      row +=
+        name.length >= len
+          ? name.slice(0, len - 1) + "…"
+          : name.padEnd(12, " ");
+      +"  ";
     }
     ctx.fillText(row, 10, y);
     y += 30;
