@@ -134,7 +134,7 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
     "recieved command: scout-assign: ",
     command.text,
     " from ",
-    getDisplayName(command.user, teamId),
+    command.user_name,
     "in",
     getNameForTeam(teamId)
   );
@@ -251,7 +251,7 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
   let team = command.team_id;
   console.log(
     "Recieved command: print schedule from ",
-    getDisplayName(command.user_id),
+    command.user_name,
     " in ",
     getNameForTeam(team)
   );
@@ -320,7 +320,7 @@ app.command("/set-channel", async ({ command, ack, respond }) => {
   console.log(command);
   console.log(
     "recieved: set-channel from",
-    getDisplayName(command.user, command.team_id),
+    command.user_name,
     " in ",
     getNameForTeam(command.team_id)
   );
