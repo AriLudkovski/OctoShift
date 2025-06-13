@@ -202,7 +202,7 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
 
 app.command("/block-assign", async ({ command, ack, respond }) => {
   await ack();
-  respond("This channel is under construction :arictopus:");
+  respond("This command is under construction :arictopus:");
 });
 
 app.command("/set-channel", async ({ command, ack, respond }) => {
