@@ -190,7 +190,7 @@ async function getDisplayName(userId, team) {
 }
 
 async function generateScheduleImage(schedule, team) {
-  const width = 800;
+  const width = 1000;
   const height = 200 + 30 * schedule.length;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
@@ -205,7 +205,7 @@ async function generateScheduleImage(schedule, team) {
 
   // Header
   const header =
-    "Block       Blue 1       Blue 2       Blue 3       Red 1       Red 2       Red 3";
+    "Block       Blue 1       Blue 2      Blue 3      Red 1       Red 2       Red 3";
   ctx.fillText(header, 10, 30);
 
   // Draw line below header
@@ -218,7 +218,7 @@ async function generateScheduleImage(schedule, team) {
   let y = 70;
   const len = 12;
   for (const block of schedule) {
-    let row = `M ${block.start}-${block.end}`.padEnd(len, " ");
+    let row = `M ${block.start}-${block.end}`.padEnd(10, " ");
     const roles = ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"];
     for (const role of roles) {
       const name = await getDisplayName(block.assignments[role], team);
