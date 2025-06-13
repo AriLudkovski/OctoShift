@@ -219,7 +219,7 @@ async function generateScheduleImage(schedule) {
     let row = `M ${block.start}-${block.end}      `;
     ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"].forEach(
       (role) => {
-        const name = block.assignments[role] || "none";
+        const name = getDisplayName(block.assignments[role]);
         row += name.padEnd(12, " ") + "  ";
       }
     );
@@ -240,7 +240,7 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
 
   var filteredSchedule = schedule.filter((element) => element.team == team);
   // Generate image buffer (could be from your generateScheduleImage function)
-  const buffer = generateScheduleImage(filteredSchedule);
+  const buffer = await generateScheduleImage(filteredSchedule);
 
   try {
     // Upload image file
