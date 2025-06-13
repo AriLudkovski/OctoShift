@@ -208,7 +208,7 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
     " from ",
     command.user_name,
     "in",
-    getNameForTeam(teamId)
+    getNameForTeam(command.team_id)
   );
   respond("This command is under construction :arictopus:");
 });
