@@ -216,8 +216,8 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
   if (!blockMatch) {
     return respond("❌ Please specify a block using `block=10-20`.");
   }
-  const start = parseInt(rangeMatch[1], 10);
-  const end = parseInt(rangeMatch[2], 10);
+  const start = parseInt(blockMatch[1], 10);
+  const end = parseInt(blockMatch[2], 10);
 
   const schedule = loadSchedule();
   const assignments = {};
