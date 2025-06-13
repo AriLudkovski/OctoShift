@@ -104,10 +104,11 @@ receiver.router.post("/webhook", async (req, res) => {
           }
           const token = tokenStore[team].botToken;
           const channel = tokenStore[team].channelId;
-          console.log(token);
-          console.log(channel);
           if (!token || !channel) {
-            console.warn("Missing token or channel for team", team);
+            console.warn(
+              "Missing token or channel for team",
+              getNameForTeam(team)
+            );
           } else {
             console.log("attempted to send");
             await app.client.chat.postMessage({
@@ -115,7 +116,7 @@ receiver.router.post("/webhook", async (req, res) => {
               channel,
               text: message,
             });
-            console.log(`sent to ${team}`);
+            console.log(`sent to ${getNameForTeam(team)}`);
           }
         }
       }
@@ -126,8 +127,15 @@ receiver.router.post("/webhook", async (req, res) => {
 //make sure the data gets entered properly
 const allowedRoles = ["red_1", "red_2", "red_3", "blue_1", "blue_2", "blue_3"];
 app.command("/scout-assign", async ({ command, ack, respond }) => {
-  console.log("recieved command: scout-assign: ", command.text);
   await ack();
+
+  const teamId = command.team_id;
+  console.log(
+    "recieved command: scout-assign: ",
+    command.text,
+    " from ",
+    getNameForTeam(teamId)
+  );
   const args = command.text.trim().split(/\s+/);
   if (args.length !== 3) {
     return respond("Usage: `/scout-assign 1-10 blue_1 @user`");
@@ -138,7 +146,7 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
     .toLowerCase()
     .replace("_", " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
-  const teamId = command.team_id;
+
   if (!allowedRoles.includes(rawRole.toLowerCase())) {
     return respond(
       `❌ Invalid role "${rawRole}". Please use one of: ${allowedRoles.join(
@@ -239,7 +247,7 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
   await ack(); // Ack early to avoid timeout
 
   let team = command.team_id;
-
+  console.log("Recieved command: print schedule from ", getNameForTeam(team));
   const schedule = loadSchedule();
 
   var filteredSchedule = schedule.filter((element) => element.team == team);
@@ -261,8 +269,7 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
 
 app.event("app_mention", async ({ event, client }) => {
   const token = getTokenForTeam(event.team);
-  console.log("Team: ", event.team);
-  console.log("Token: ", token);
+  console.log("Mentioned by ", getNameForTeam(event.team));
   const result = await client.chat.postMessage({
     token,
     channel: event.channel,
