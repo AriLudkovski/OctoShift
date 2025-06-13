@@ -224,7 +224,7 @@ async function generateScheduleImage(schedule, team) {
       const name = await getDisplayName(block.assignments[role], team);
       row +=
         name.length >= len
-          ? name.slice(0, len - 1) + "…"
+          ? name.slice(0, len - 2) + "…"
           : name.padEnd(len, " ");
       +"  ";
     }
