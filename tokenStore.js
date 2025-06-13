@@ -18,6 +18,9 @@ function saveStore() {
 
 // Save token for a team ID
 function saveTokenForTeam(teamId, token) {
+  if (!tokenStore[teamId]) {
+    tokenStore[teamId] = {}; // Initialize object if missing
+  }
   tokenStore[teamId].botToken = token;
   saveStore();
 }
@@ -44,6 +47,9 @@ function getNameForTeam(teamId) {
 
 //save name for team id
 function saveNameForTeam(teamId, teamName) {
+  if (!tokenStore[teamId]) {
+    tokenStore[teamId] = {}; // Initialize object if missing
+  }
   if (!tokenStore[teamId]) tokenStore[teamId] = {};
   tokenStore[teamId].name = teamName;
   saveStore();
