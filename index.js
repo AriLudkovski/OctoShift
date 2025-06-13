@@ -255,7 +255,7 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
     block.assignments[role] = userId;
     message += `${role}: @<${userId}> `;
   }
-  saveSchedule();
+  saveSchedule(schedule);
   message += `to matches ${start}-${end}`;
   respond(message);
 });
