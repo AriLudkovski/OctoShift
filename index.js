@@ -173,7 +173,7 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
     `✅ Assigned <@${userId}> to *${role.toUpperCase()}* for matches ${start}-${end}`
   );
 });
-async function getDisplayName(userId) {
+async function getDisplayName(userId, team) {
   try {
     const result = await app.client.users.info({
       user: userId,
@@ -188,7 +188,7 @@ async function getDisplayName(userId) {
   }
 }
 
-async function generateScheduleImage(schedule) {
+async function generateScheduleImage(schedule, team) {
   const width = 800;
   const height = 200 + 30 * schedule.length;
   const canvas = createCanvas(width, height);
@@ -215,17 +215,16 @@ async function generateScheduleImage(schedule) {
 
   // Draw schedule rows
   let y = 70;
-  schedule.forEach((block) => {
+  for (const block of schedule) {
     let row = `M ${block.start}-${block.end}      `;
-    ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"].forEach(
-      (role) => {
-        const name = getDisplayName(block.assignments[role]);
-        row += name.padEnd(12, " ") + "  ";
-      }
-    );
+    const roles = ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"];
+    for (const role of roles) {
+      const name = await getDisplayName(block.assignments[role], team);
+      row += name.padEnd(12, " ") + "  ";
+    }
     ctx.fillText(row, 10, y);
     y += 30;
-  });
+  }
 
   // Save to file or return buffer
   return canvas.toBuffer();
@@ -240,7 +239,7 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
 
   var filteredSchedule = schedule.filter((element) => element.team == team);
   // Generate image buffer (could be from your generateScheduleImage function)
-  const buffer = await generateScheduleImage(filteredSchedule);
+  const buffer = await generateScheduleImage(filteredSchedule, team);
 
   try {
     // Upload image file
