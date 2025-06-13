@@ -287,7 +287,7 @@ app.event("app_mention", async ({ event, client }) => {
   const token = getTokenForTeam(event.team);
   console.log(
     "Mentioned by ",
-    getDisplayName(event.user, event.team),
+    await getDisplayName(event.user, event.team),
     " in ",
     getNameForTeam(event.team)
   );
