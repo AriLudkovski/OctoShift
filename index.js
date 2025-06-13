@@ -1,6 +1,5 @@
 require("dotenv").config();
-const sharp = require("sharp");
-const Jimp = require("jimp");
+const { createCanvas, loadImage } = require("canvas");
 const fs = require("fs");
 const path = require("path");
 const {
@@ -189,80 +188,69 @@ async function getDisplayName(userId) {
   }
 }
 
-async function generateScheduleImage(schedule, team) {
+async function generateScheduleImage(team) {
   const width = 800;
-  const height = 400;
-  const image = new Jimp(width, height, "#ffffff");
+  const height = 200 + 30 * schedule.length;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext("2d");
 
-  const font = await Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
-  let y = 20;
+  // Background
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, width, height);
 
-  image.print(font, 20, y, "Scouting Schedule");
-  y += 30;
+  // Text style
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
 
-  // Draw headers
-  const headers = [
-    "Block",
-    "Blue 1",
-    "Blue 2",
-    "Blue 3",
-    "Red 1",
-    "Red 2",
-    "Red 3",
-  ];
-  headers.forEach((header, i) => {
-    image.print(font, 20 + i * 100, y, header);
-  });
+  // Header
+  const header =
+    "⬛Block      🟦Blue 1      🟦Blue 2      🟦Blue 3      🟥Red 1      🟥Red 2      🟥Red 3";
+  ctx.fillText(header, 10, 30);
 
-  y += 30;
+  // Draw line below header
+  ctx.beginPath();
+  ctx.moveTo(10, 40);
+  ctx.lineTo(width - 10, 40);
+  ctx.stroke();
 
-  // Draw rows
+  // Draw schedule rows
+  let y = 70;
   schedule.forEach((block) => {
     if (block.teamId == team) {
-      const row = [
-        `${block.start}-${block.end}`,
-        block.assignments["Blue 1"] || "none",
-        block.assignments["Blue 2"] || "none",
-        block.assignments["Blue 3"] || "none",
-        block.assignments["Red 1"] || "none",
-        block.assignments["Red 2"] || "none",
-        block.assignments["Red 3"] || "none",
-      ];
-      row.forEach((val, i) => {
-        image.print(font, 20 + i * 100, y, val);
-      });
+      let row = `M ${block.start}-${block.end}      `;
+      ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"].forEach(
+        (role) => {
+          const name = block.assignments[role] || "none";
+          row += name.padEnd(12, " ") + "  ";
+        }
+      );
+      ctx.fillText(row, 10, y);
+      y += 30;
     }
-    y += 25;
   });
 
-  return image;
+  // Save to file or return buffer
+  return canvas.toBuffer();
 }
 
-app.command("/print-schedule", async ({ command, ack, client, respond }) => {
-  await ack();
-  console.log("received command: print schedule");
-  let schedule = loadSchedule();
-  const team = command.team_id;
-  const hasBlocks = schedule.some((block) => block.team === team);
-  if (!hasBlocks) {
-    respond(`No schedule for ${getNameForTeam(team)}`);
-    return;
-  }
-  schedule.sort((a, b) => a.start - b.start);
-  let image = await generateScheduleImage(schedule, team);
+app.command("/print-schedule", async ({ command, ack, client }) => {
+  await ack(); // Ack early to avoid timeout
+
+  team = command.team_id;
+  // Generate image buffer (could be from your generateScheduleImage function)
+  const buffer = generateScheduleImage(team);
+
   try {
-    const result = await client.files.uploadV2({
-      channel_id: getChannelForTeam(team), // where to post it
-      initial_comment: "Here is the scouting schedule 🧠📋",
+    // Upload image file
+    await client.files.upload({
+      channels: command.channel_id,
+      initial_comment: "Here is the scouting schedule!",
+      file: buffer,
       filename: "schedule.png",
       filetype: "png",
-      title: "Scouting Schedule",
-      file: image, // this is your image
     });
-
-    console.log("File uploaded:", result.file.id);
   } catch (error) {
-    console.error("File upload failed:", error);
+    console.error("Failed to upload schedule image:", error);
   }
 });
 
