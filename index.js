@@ -113,9 +113,10 @@ async function generateScheduleImage(schedule, team) {
   return canvas.toBuffer();
 }
 
-app.command("/print-schedule", async ({ command, ack, client }) => {
+app.command("/print-schedule", async ({ command, ack, client, say }) => {
   await ack(); // Ack early to avoid timeout
 
+  const users = [];
   let team = command.team_id;
   console.log(
     "Recieved command: print schedule from ",
@@ -130,6 +131,15 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
   // Generate image buffer (could be from your generateScheduleImage function)
   const buffer = await generateScheduleImage(filteredSchedule, team);
 
+  for (const block of schedule) {
+    const roles = ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"];
+    for (const role of roles) {
+      if (!users.includes(block.assignments[role])) {
+        users.push(block.assignments[role]);
+      }
+    }
+  }
+
   try {
     // Upload image file
     await client.filesUploadV2({
@@ -138,6 +148,8 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
       file: buffer,
       filename: "schedule.png",
     });
+    if (command.text.includes("--ping"))
+      say(`<@${users.join("> <@").slice(0, -2)}`);
   } catch (error) {
     console.error("Failed to upload schedule image:", error);
   }
