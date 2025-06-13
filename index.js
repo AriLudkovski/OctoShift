@@ -134,6 +134,8 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
     "recieved command: scout-assign: ",
     command.text,
     " from ",
+    getDisplayName(command.user, teamId),
+    "in",
     getNameForTeam(teamId)
   );
   const args = command.text.trim().split(/\s+/);
@@ -247,7 +249,12 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
   await ack(); // Ack early to avoid timeout
 
   let team = command.team_id;
-  console.log("Recieved command: print schedule from ", getNameForTeam(team));
+  console.log(
+    "Recieved command: print schedule from ",
+    getDisplayName(command.user_id),
+    " in ",
+    getNameForTeam(team)
+  );
   const schedule = loadSchedule();
 
   var filteredSchedule = schedule.filter((element) => element.team == team);
@@ -269,7 +276,12 @@ app.command("/print-schedule", async ({ command, ack, client }) => {
 
 app.event("app_mention", async ({ event, client }) => {
   const token = getTokenForTeam(event.team);
-  console.log("Mentioned by ", getNameForTeam(event.team));
+  console.log(
+    "Mentioned by ",
+    getDisplayName(event.user, event.team),
+    " in ",
+    getNameForTeam(event.team)
+  );
   const result = await client.chat.postMessage({
     token,
     channel: event.channel,
@@ -305,7 +317,13 @@ app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
   }
 });
 app.command("/set-channel", async ({ command, ack, respond }) => {
-  console.log("recieved: set-channel");
+  console.log(command);
+  console.log(
+    "recieved: set-channel from",
+    getDisplayName(command.user, command.team_id),
+    " in ",
+    getNameForTeam(command.team_id)
+  );
   await ack();
 
   const teamId = command.team_id;
