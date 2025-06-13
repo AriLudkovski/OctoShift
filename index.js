@@ -202,6 +202,7 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
 
 app.command("/block-assign", async ({ command, ack, respond }) => {
   await ack();
+  const team = command.team_id;
   console.log(
     "recieved command: block-assign: ",
     command.text,
@@ -210,7 +211,55 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
     "in",
     getNameForTeam(command.team_id)
   );
-  respond("This command is under construction :arictopus:");
+  const assignments = {};
+  const args = command.text.trim().split(/\s+/);
+  for (const arg of args) {
+    const [key, value] = arg.split("=");
+
+    if (key === "block") {
+      rangeStr = value;
+      const rangeMatch = rangeStr.match(/^(\d+)-(\d+)$/);
+
+      if (!rangeMatch) {
+        return say("❌ Please specify a block, e.g., `block=M10-20`.");
+      }
+      const start = parseInt(rangeMatch[1], 10);
+      const end = parseInt(rangeMatch[2], 10);
+    } else {
+      if (!allowedRoles.includes(key.toLowerCase())) {
+        return respond(
+          `❌ Invalid role "${key}". Please use one of: ${allowedRoles.join(
+            ", "
+          )}`
+        );
+      }
+      const normalizedKey = key.replace("_", " "); // e.g., blue_1 → Blue 1
+
+      const match = value.match(/^<@(\w+)>$/);
+      if (match) {
+        assignments[
+          normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1)
+        ] = match[1];
+      }
+    }
+  }
+  const schedule = loadSchedule();
+  let block = schedule.find(
+    (b) => b.start === start && b.end === end && b.team == team
+  );
+  if (!block) {
+    block = { start: start, end: end, assignments: {}, team: team };
+    schedule.push(block);
+  }
+  let message = `Assigned; `;
+
+  for (const [role, userId] of Object.entries(assignments)) {
+    block.assignments[role] = userId;
+    message += `${role}: @<${userId}> `;
+  }
+
+  message += `to matches ${start}-${end}`;
+  respond(message);
 });
 
 app.command("/set-channel", async ({ command, ack, respond }) => {
