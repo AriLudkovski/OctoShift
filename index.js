@@ -216,6 +216,7 @@ async function generateScheduleImage(schedule, team) {
 
   // Draw schedule rows
   let y = 70;
+  const len = 12;
   for (const block of schedule) {
     let row = `M ${block.start}-${block.end}      `;
     const roles = ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"];
@@ -224,7 +225,7 @@ async function generateScheduleImage(schedule, team) {
       row +=
         name.length >= len
           ? name.slice(0, len - 1) + "…"
-          : name.padEnd(12, " ");
+          : name.padEnd(len, " ");
       +"  ";
     }
     ctx.fillText(row, 10, y);
