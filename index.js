@@ -159,7 +159,6 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       limit: 5, // small number for efficiency
     });
 
-    console.log(JSON.stringify(history));
     // Try to find the most recent file upload message
     const fileId = result.files[0].id; // fixed path to uploaded file ID
 
@@ -167,6 +166,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       msg.files?.some((file) => file.id === fileId)
     );
     if (fileMessage && command.text.includes("--pin")) {
+      console.log("Message timestamp:", timestamp);
       await client.pins.add({
         channel: command.channel_id,
         timestamp: fileMessage.ts,
