@@ -154,25 +154,23 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       file: buffer,
       filename: "schedule.png",
     });
-    const history = await client.conversations.history({
-      channel: command.channel_id,
-      limit: 5, // small number for efficiency
-    });
+    const message =
+      uploadResult.file?.shares?.public?.[command.channel_id]?.[0];
 
-    // Try to find the most recent file upload message
-    const fileId = result.files[0].id; // fixed path to uploaded file ID
+    // If that doesn't exist, check private shares (for private channels)
+    const privateMessage =
+      uploadResult.file?.shares?.private?.[command.channel_id]?.[0];
 
-    const fileMessage = history.messages.find((msg) =>
-      msg.files?.some((file) => file.id === fileId)
-    );
-    if (fileMessage && command.text.includes("--pin")) {
-      console.log("Message timestamp:", timestamp);
+    const messageToPin = message || privateMessage;
+
+    if (!messageToPin) {
+      console.error("Failed to find the message timestamp to pin.");
+    } else {
       await client.pins.add({
         channel: command.channel_id,
-        timestamp: fileMessage.ts,
+        timestamp: messageToPin.ts,
       });
-    } else {
-      console.warn("⚠️ Could not find message to pin.");
+      onsole.warn("⚠️ Could not find message to pin.");
     }
   } catch (error) {
     console.error("Failed to upload schedule image:", error);
