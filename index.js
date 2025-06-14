@@ -155,7 +155,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       filename: "schedule.png",
     });
     console.log(JSON.stringify(result));
-    const ts = result?.files.files[0]?.timestamp;
+    const ts = result?.files.files[timestamp];
     console.log("timestamp: ", ts);
     if (command.text.includes("--pin") && ts) {
       await client.pins.add({
