@@ -144,7 +144,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
 
   try {
     // Upload image file
-    let message = await client.filesUploadV2({
+    let result = await client.filesUploadV2({
       channel_id: command.channel_id,
       initial_comment:
         `Here is the scouting schedule!` +
@@ -154,11 +154,11 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       file: buffer,
       filename: "schedule.png",
     });
-    console.log(message);
-    if (command.text.includes("--pin")) {
+    const ts = result?.file?.shares?.public?.[command.channel_id]?.[0]?.ts;
+    if (command.text.includes("--pin") && ts) {
       await client.pins.add({
         channel: command.channel_id,
-        timestamp: message.ts,
+        timestamp: ts,
       });
     }
   } catch (error) {
