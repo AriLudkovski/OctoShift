@@ -300,7 +300,7 @@ app.command("/clear-block", async ({ command, ack, respond }) => {
               text: "Yes, delete it",
             },
             style: "danger",
-            value: { start: start, end: end },
+            value: JSON.stringify({ start, end }),
             action_id: "confirm_delete_block",
           },
           {
@@ -324,8 +324,7 @@ app.action(
     await ack();
 
     const teamId = body.team.id;
-    const start = body.value.start;
-    const end = body.value.end;
+    const { start, end } = JSON.parse(body.value);
 
     const schedule = loadSchedule();
     let block = schedule.find(
