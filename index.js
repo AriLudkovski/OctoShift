@@ -159,6 +159,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       limit: 5, // small number for efficiency
     });
 
+    console.log(JSON.stringify(history));
     // Try to find the most recent file upload message
     const fileMessage = history.messages.find((msg) =>
       msg.files?.some((file) => file.id === result.file.id)
