@@ -154,6 +154,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       file: buffer,
       filename: "schedule.png",
     });
+    console.log(JSON.stringify(result));
     const ts = result?.file?.shares?.public?.[command.channel_id]?.[0]?.ts;
     if (command.text.includes("--pin") && ts) {
       await client.pins.add({
