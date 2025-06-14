@@ -338,7 +338,7 @@ app.action(
       );
       saveSchedule(updatedSchedule);
       say(
-        `${getDisplayName(
+        `${await getDisplayName(
           body.user.id,
           teamId
         )} has deleted block ${start}-${end}`
