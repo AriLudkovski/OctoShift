@@ -285,6 +285,14 @@ app.command("/clear-block", async ({ command, ack, respond }) => {
   await ack();
 
   const text = command.text.trim();
+  let team = command.team_id;
+  console.log(
+    "Recieved command: clear-block: " + text + " from ",
+    command.user_name,
+    " in ",
+    getNameForTeam(team)
+  );
+
   const rangeMatch = text.match(/^(\d+)-(\d+)$/);
   if (!rangeMatch) {
     return respond('❌ Invalid format. Please input a block such as "1-10"');
