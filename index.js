@@ -156,6 +156,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
     });
     console.log(JSON.stringify(result));
     const ts = result?.files[0]?.timestamp;
+    console.log("timestamp: ", ts);
     if (command.text.includes("--pin") && ts) {
       await client.pins.add({
         channel: command.channel_id,
