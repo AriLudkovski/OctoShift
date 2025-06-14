@@ -291,6 +291,13 @@ app.command("/clear-block", async ({ command, ack, respond }) => {
     text: `⚠️Are you sure you want to delete the schedule for matches *${start}-${end}*? This cannot be undone!⚠️`,
     blocks: [
       {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `⚠️ Are you sure you want to delete block *${start}-${end}*? This cannot be undone!⚠️`,
+        },
+      },
+      {
         type: "actions",
         elements: [
           {
@@ -328,7 +335,7 @@ app.action(
 
     const schedule = loadSchedule();
     let block = schedule.find(
-      (b) => b.start === start && b.end === end && b.team == teamId
+      (b) => b.start !== start && b.end !== end && b.team != teamId
     );
     if (!block) {
       respond(`Block ${start}-${end} does not exist!`);
@@ -337,6 +344,7 @@ app.action(
         (b) => b.start === start && b.end === end && b.team == teamId
       );
       saveSchedule(updatedSchedule);
+      respond({ replace_original: true, text: "Block has been deleted" });
       say(
         `${await getDisplayName(
           body.user.id,
