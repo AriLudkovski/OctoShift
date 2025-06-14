@@ -324,7 +324,7 @@ app.action(
     await ack();
 
     const teamId = body.team.id;
-    const { start, end } = JSON.parse(body.value);
+    const { start, end } = JSON.parse(body.actions[0].value);
 
     const schedule = loadSchedule();
     let block = schedule.find(
@@ -346,25 +346,9 @@ app.action(
     }
   }
 );
-app.action("cancel_delete_block", async ({ ack, body, client, say }) => {
+app.action("cancel_delete_block", async ({ ack, body, client, respond }) => {
   await ack();
-
-  const channel = body.channel?.id || body.container?.channel_id;
-  const ts = body.message?.ts || body.container?.message_ts;
-
-  if (!channel || !ts) {
-    console.error("Missing channel or message timestamp.");
-    return;
-  }
-
-  try {
-    await client.chat.delete({
-      channel: channel,
-      ts: ts,
-    });
-  } catch (error) {
-    console.error("Failed to delete message:", error);
-  }
+  await respond({ text: "❌Canceled", replace_original: true });
 });
 app.command("/set-channel", async ({ command, ack, respond }) => {
   await ack();
