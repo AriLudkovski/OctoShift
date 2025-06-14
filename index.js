@@ -149,19 +149,28 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       initial_comment:
         `Here is the scouting schedule!` +
         (command.text.includes("--ping")
-          ? ` Scouts: <@${users.join("> <@").slice(0, -2)}`
+          ? ` Scouts: <@${users.join("> <@")}>`
           : ""),
       file: buffer,
       filename: "schedule.png",
     });
-    console.log(JSON.stringify(result));
-    const ts = result?.files.files["timestamp"];
-    console.log("timestamp: ", ts);
-    if (command.text.includes("--pin") && ts) {
+    const history = await client.conversations.history({
+      channel: command.channel_id,
+      limit: 5, // small number for efficiency
+    });
+
+    // Try to find the most recent file upload message
+    const fileMessage = history.messages.find((msg) =>
+      msg.files?.some((file) => file.id === result.file.id)
+    );
+
+    if (fileMessage && command.text.includes("--pin")) {
       await client.pins.add({
         channel: command.channel_id,
-        timestamp: ts,
+        timestamp: fileMessage.ts,
       });
+    } else {
+      console.warn("⚠️ Could not find message to pin.");
     }
   } catch (error) {
     console.error("Failed to upload schedule image:", error);
