@@ -159,7 +159,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
 
     // If that doesn't exist, check private shares (for private channels)
     const privateMessage =
-      uploadResult.file?.shares?.private?.[command.channel_id]?.[0];
+      result.file?.shares?.private?.[command.channel_id]?.[0];
 
     const messageToPin = message || privateMessage;
 
