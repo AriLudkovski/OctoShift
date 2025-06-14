@@ -154,8 +154,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       file: buffer,
       filename: "schedule.png",
     });
-    const message =
-      uploadResult.file?.shares?.public?.[command.channel_id]?.[0];
+    const message = result.file?.shares?.public?.[command.channel_id]?.[0];
 
     // If that doesn't exist, check private shares (for private channels)
     const privateMessage =
@@ -170,7 +169,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
         channel: command.channel_id,
         timestamp: messageToPin.ts,
       });
-      onsole.warn("⚠️ Could not find message to pin.");
+      console.warn("⚠️ Could not find message to pin.");
     }
   } catch (error) {
     console.error("Failed to upload schedule image:", error);
