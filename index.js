@@ -349,10 +349,18 @@ app.action(
 app.action("cancel_delete_block", async ({ ack, body, client, say }) => {
   await ack();
 
+  const channel = body.channel?.id || body.container?.channel_id;
+  const ts = body.message?.ts || body.container?.message_ts;
+
+  if (!channel || !ts) {
+    console.error("Missing channel or message timestamp.");
+    return;
+  }
+
   try {
     await client.chat.delete({
-      channel: body.channel.id,
-      ts: body.message.ts,
+      channel: channel,
+      ts: ts,
     });
   } catch (error) {
     console.error("Failed to delete message:", error);
