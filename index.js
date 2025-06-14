@@ -113,49 +113,55 @@ async function generateScheduleImage(schedule, team) {
   return canvas.toBuffer();
 }
 
-app.command("/print-schedule", async ({ command, ack, client, say }) => {
-  await ack(); // Ack early to avoid timeout
+app.command(
+  "/print-schedule",
+  async ({ command, ack, client, say, respond }) => {
+    await ack(); // Ack early to avoid timeout
 
-  const users = [];
-  let team = command.team_id;
-  console.log(
-    "Recieved command: print schedule from ",
-    command.user_name,
-    " in ",
-    getNameForTeam(team)
-  );
-  const schedule = loadSchedule();
+    const users = [];
+    let team = command.team_id;
+    console.log(
+      "Recieved command: print schedule from ",
+      command.user_name,
+      " in ",
+      getNameForTeam(team)
+    );
+    const schedule = loadSchedule();
+    const hasMatches = schedule.some((block) => block.team === team);
+    if (!hasMatches)
+      return respond("Your team has no logged scouting schedule");
 
-  var filteredSchedule = schedule.filter((element) => element.team == team);
-  filteredSchedule.sort((a, b) => a.start - b.start);
-  // Generate image buffer (could be from your generateScheduleImage function)
-  const buffer = await generateScheduleImage(filteredSchedule, team);
+    var filteredSchedule = schedule.filter((element) => element.team == team);
+    filteredSchedule.sort((a, b) => a.start - b.start);
+    // Generate image buffer (could be from your generateScheduleImage function)
+    const buffer = await generateScheduleImage(filteredSchedule, team);
 
-  for (const block of schedule) {
-    const roles = ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"];
-    for (const role of roles) {
-      if (!users.includes(block.assignments[role])) {
-        users.push(block.assignments[role]);
+    for (const block of schedule) {
+      const roles = ["Blue 1", "Blue 2", "Blue 3", "Red 1", "Red 2", "Red 3"];
+      for (const role of roles) {
+        if (!users.includes(block.assignments[role])) {
+          users.push(block.assignments[role]);
+        }
       }
     }
-  }
 
-  try {
-    // Upload image file
-    await client.filesUploadV2({
-      channel_id: command.channel_id,
-      initial_comment:
-        `Here is the scouting schedule!` +
-        (command.text.includes("--ping")
-          ? ` Scouts: <@${users.join("> <@").slice(0, -2)}`
-          : ""),
-      file: buffer,
-      filename: "schedule.png",
-    });
-  } catch (error) {
-    console.error("Failed to upload schedule image:", error);
+    try {
+      // Upload image file
+      await client.filesUploadV2({
+        channel_id: command.channel_id,
+        initial_comment:
+          `Here is the scouting schedule!` +
+          (command.text.includes("--ping")
+            ? ` Scouts: <@${users.join("> <@").slice(0, -2)}`
+            : ""),
+        file: buffer,
+        filename: "schedule.png",
+      });
+    } catch (error) {
+      console.error("Failed to upload schedule image:", error);
+    }
   }
-});
+);
 
 app.command("/scout-assign", async ({ command, ack, respond }) => {
   await ack();
