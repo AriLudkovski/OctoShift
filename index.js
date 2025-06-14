@@ -335,13 +335,13 @@ app.action(
 
     const schedule = loadSchedule();
     let block = schedule.find(
-      (b) => b.start !== start && b.end !== end && b.team != teamId
+      (b) => b.start === start && b.end === end && b.team == teamId
     );
     if (!block) {
       respond(`Block ${start}-${end} does not exist!`);
     } else {
       const updatedSchedule = schedule.filter(
-        (b) => b.start === start && b.end === end && b.team == teamId
+        (b) => b.start !== start && b.end !== end && b.team != teamId
       );
       saveSchedule(updatedSchedule);
       respond({ replace_original: true, text: "Block has been deleted" });
