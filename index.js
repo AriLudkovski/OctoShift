@@ -142,14 +142,56 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
     }
   }
 
-  try {
+  const fileResult = await client.files.uploadV2({
+    file: buffer,
+    filename: "schedule.png",
+    title: "Scouting Schedule",
+    channel_id: undefined, // Important: don't auto-share
+  });
+
+  // 2. Get file ID
+  const fileId = fileResult.file?.id;
+  if (!fileId) throw new Error("File upload failed or file ID missing");
+
+  // 3. Post custom message with file
+  const postResult = await client.chat.postMessage({
+    channel: channelId,
+    text: "Here is the updated scouting schedule! 📋",
+    blocks: [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: "Here is the updated scouting schedule! 📋",
+        },
+      },
+    ],
+    attachments: [
+      {
+        blocks: [
+          {
+            type: "image",
+            image_url: fileResult.file.permalink_public,
+            alt_text: "Scouting Schedule",
+          },
+        ],
+      },
+    ],
+  });
+
+  // 4. Pin the message
+  await client.pins.add({
+    channel: channelId,
+    timestamp: postResult.ts,
+  });
+  /*try {
     // Upload image file
     let result = await client.filesUploadV2({
       channel_id: command.channel_id,
       initial_comment:
         `Here is the scouting schedule!` +
         (command.text.includes("--ping")
-          ? ` Scouts: <@${users.join("> <@")}>`
+          ? ` Scouts: <@${users.join("> <@").slice(0, -2)}`
           : ""),
       file: buffer,
       filename: "schedule.png",
@@ -174,6 +216,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
   } catch (error) {
     console.error("Failed to upload schedule image:", error);
   }
+    */
 });
 
 app.command("/scout-assign", async ({ command, ack, respond }) => {
