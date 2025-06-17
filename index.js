@@ -142,7 +142,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
     }
   }
 
-  const fileResult = await client.filesuploadV2({
+  const fileResult = await client.files.filesuploadV2({
     file: buffer,
     filename: "schedule.png",
     title: "Scouting Schedule",
