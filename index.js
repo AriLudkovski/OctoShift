@@ -238,7 +238,7 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
 
   const schedule = loadSchedule();
   const assignments = {};
-  const roleRegex = /(\w+)=<@([A-Z0-9]+)>/g;
+  const roleRegex = /(\w+)=<@([A-Z0-9]+)(?:\|[^>]+)?>/g;
   let match;
 
   while ((match = roleRegex.exec(text)) !== null) {
@@ -268,6 +268,7 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
   }
   let message = `Assigned; `;
 
+  console.log(assignments);
   for (const [role, userId] of Object.entries(assignments)) {
     block.assignments[role] = userId;
     console.log("Role, ", role, " userId ", userId);
