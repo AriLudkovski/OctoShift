@@ -142,16 +142,18 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
     }
   }
 
-  const fileResult = await client.files.uploadV2({
+  const fileResult = await client.files.completeUploadExternal({
     file: buffer,
     filename: "schedule.png",
     title: "Scouting Schedule",
-    channel_id: undefined, // Important: don't auto-share
   });
 
   // 2. Get file ID
   const fileId = fileResult.file?.id;
-  if (!fileId) throw new Error("File upload failed or file ID missing");
+  if (!uploadResult.ok || !uploadResult.file?.id) {
+    console.error("File upload failed or missing file ID");
+    return;
+  }
 
   // 3. Post custom message with file
   const postResult = await client.chat.postMessage({
