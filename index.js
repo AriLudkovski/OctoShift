@@ -142,22 +142,15 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
     }
   }
 
-  const fileResult = await client.files.filesuploadV2({
+  const fileUpload = await client.filesUploadV2({
+    token: context.botToken,
     file: buffer,
     filename: "schedule.png",
     title: "Scouting Schedule",
   });
 
-  // 2. Get file ID
-  const fileId = fileResult.file?.id;
-  if (!uploadResult.ok || !uploadResult.file?.id) {
-    console.error("File upload failed or missing file ID");
-    return;
-  }
-
-  // 3. Post custom message with file
   const postResult = await client.chat.postMessage({
-    channel: channelId,
+    channel: command.channel_id,
     text: "Here is the updated scouting schedule! 📋",
     blocks: [
       {
@@ -167,23 +160,17 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
           text: "Here is the updated scouting schedule! 📋",
         },
       },
-    ],
-    attachments: [
       {
-        blocks: [
-          {
-            type: "image",
-            image_url: fileResult.file.permalink_public,
-            alt_text: "Scouting Schedule",
-          },
-        ],
+        type: "image",
+        image_url: fileUpload.file.url_private,
+        alt_text: "Scouting Schedule",
       },
     ],
   });
 
-  // 4. Pin the message
+  // 📌 Pin it
   await client.pins.add({
-    channel: channelId,
+    channel: command.channel_id,
     timestamp: postResult.ts,
   });
   /*try {
