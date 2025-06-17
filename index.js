@@ -143,7 +143,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
   }
 
   const fileUpload = await client.filesUploadV2({
-    token: context.botToken,
+    token: getTokenForTeam(team),
     file: buffer,
     filename: "schedule.png",
     title: "Scouting Schedule",
