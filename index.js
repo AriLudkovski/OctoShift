@@ -238,7 +238,7 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
 
   const schedule = loadSchedule();
   const assignments = {};
-  const roleRegex = /(\w+)=<@([A-Z0-9]+)(?:\|[^>]+)?>/g;
+  const roleRegex = /(\w+)=\s*<@([A-Z0-9]+)(?:\|[^>]+)?>/g;
   let match;
 
   while ((match = roleRegex.exec(text)) !== null) {
