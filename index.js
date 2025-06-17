@@ -142,41 +142,9 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
     }
   }
 
-  const fileUpload = await client.filesUploadV2({
-    token: getTokenForTeam(team),
-    file: buffer,
-    filename: "schedule.png",
-    title: "Scouting Schedule",
-    channel: command.channel_id,
-  });
-  await client.files.sharedPublicURL({ file: fileUpload.file.id });
-  const postResult = await client.chat.postMessage({
-    channel: command.channel_id,
-    text: "Here is the updated scouting schedule! 📋",
-    blocks: [
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: "Here is the updated scouting schedule! 📋",
-        },
-      },
-      {
-        type: "image",
-        image_url: fileUpload.file.url_private,
-        alt_text: "Scouting Schedule",
-      },
-    ],
-  });
-
-  // 📌 Pin it
-  await client.pins.add({
-    channel: command.channel_id,
-    timestamp: postResult.ts,
-  });
-  /*try {
+  try {
     // Upload image file
-    let result = await client.filesUploadV2({
+    await client.filesUploadV2({
       channel_id: command.channel_id,
       initial_comment:
         `Here is the scouting schedule!` +
@@ -186,27 +154,9 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       file: buffer,
       filename: "schedule.png",
     });
-    const message = result.file?.shares?.public?.[command.channel_id]?.[0];
-
-    // If that doesn't exist, check private shares (for private channels)
-    const privateMessage =
-      result.file?.shares?.private?.[command.channel_id]?.[0];
-
-    const messageToPin = message || privateMessage;
-
-    if (!messageToPin) {
-      console.error("Failed to find the message timestamp to pin.");
-    } else {
-      await client.pins.add({
-        channel: command.channel_id,
-        timestamp: messageToPin.ts,
-      });
-      console.warn("⚠️ Could not find message to pin.");
-    }
   } catch (error) {
     console.error("Failed to upload schedule image:", error);
   }
-    */
 });
 
 app.command("/scout-assign", async ({ command, ack, respond }) => {
