@@ -147,8 +147,9 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
     file: buffer,
     filename: "schedule.png",
     title: "Scouting Schedule",
+    channel: command.channel_id,
   });
-
+  await client.files.sharedPublicURL({ file: fileUpload.file.id });
   const postResult = await client.chat.postMessage({
     channel: command.channel_id,
     text: "Here is the updated scouting schedule! 📋",
