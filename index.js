@@ -270,6 +270,7 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
 
   for (const [role, userId] of Object.entries(assignments)) {
     block.assignments[role] = userId;
+    console.log("Role, ", role, " userId ", userId);
     message += `${role}: @<${userId}> `;
   }
   saveSchedule(schedule);
