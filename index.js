@@ -405,6 +405,33 @@ app.event("app_mention", async ({ event, client }) => {
     console.err("slack api error: ", result.error);
   }
 });
+
+app.command("/set-event", async ({ command, ack, respond }) => {
+  await ack();
+  console.log(
+    "recieved: set-event: ",
+    command.text,
+    " from ",
+    command.user_name,
+    " in ",
+    getNameForTeam(command.team_id)
+  );
+  const response = await fetch(`www.thebluealliance.com/api/v3/event/${text}`);
+  console.log("repspones: ", response);
+  const text = command.text;
+  const teamId = command.team_id;
+  const name = getNameForTeam(teamId);
+
+  //saveChannelForTeam(teamId, channelId);
+
+  await respond({
+    text: `✅ Event for ${
+      name || "Missing name, please reinstall App!!!"
+    } set to <#${text}>`,
+    response_type: "ephemeral",
+  });
+});
+
 //recieving match data
 receiver.router.post("/webhook", async (req, res) => {
   try {
