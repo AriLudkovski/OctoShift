@@ -417,6 +417,7 @@ app.command("/set-event", async ({ command, ack, respond }) => {
     getNameForTeam(command.team_id)
   );
   const text = command.text;
+  let headers = { "X-TBA-Auth-Key": process.env.TBA_API_KEY };
   const response = await fetch(
     `https://www.thebluealliance.com/api/v3/${text}`
   );
