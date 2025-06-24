@@ -417,7 +417,9 @@ app.command("/set-event", async ({ command, ack, respond }) => {
     getNameForTeam(command.team_id)
   );
   const text = command.text;
-  const response = await fetch(`https://www.thebluealliance.com/api/v3${text}`);
+  const response = await fetch(
+    `https://www.thebluealliance.com/api/v3/${text}`
+  );
   console.log("repspones: ", response);
 
   const teamId = command.team_id;
@@ -428,7 +430,7 @@ app.command("/set-event", async ({ command, ack, respond }) => {
   await respond({
     text: `✅ Event for ${
       name || "Missing name, please reinstall App!!!"
-    } set to <#${text}>`,
+    } succesfully set to ${text}`,
     response_type: "ephemeral",
   });
 });
