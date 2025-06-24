@@ -416,9 +416,10 @@ app.command("/set-event", async ({ command, ack, respond }) => {
     " in ",
     getNameForTeam(command.team_id)
   );
+  const text = command.text;
   const response = await fetch(`www.thebluealliance.com/api/v3/event/${text}`);
   console.log("repspones: ", response);
-  const text = command.text;
+
   const teamId = command.team_id;
   const name = getNameForTeam(teamId);
 
