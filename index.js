@@ -11,7 +11,6 @@ const {
   saveNameForTeam,
   getNameForTeam,
   getAllTokens,
-  saveEventForTeam,
 } = require("./tokenStore");
 const schedulePath = path.join(__dirname, "schedule.json");
 const { App, ExpressReceiver } = require("@slack/bolt");
