@@ -7,7 +7,6 @@ const {
   saveTokenForTeam,
   saveChannelForTeam,
   getChannelForTeam,
-  getEventForTeam,
   saveEventForTeam,
   saveNameForTeam,
   getNameForTeam,
