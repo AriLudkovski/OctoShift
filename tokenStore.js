@@ -55,6 +55,17 @@ function saveNameForTeam(teamId, teamName) {
   saveStore();
 }
 
+function saveEventForTeam(teamId, eventId) {
+  if (!tokenStore[teamId]) {
+    tokenStore[teamId] = {}; // Initialize object if missing
+  }
+  if (!tokenStore[teamId]) tokenStore[teamId] = {};
+  tokenStore[teamId].event = eventId;
+  saveStore();
+}
+function getEventForTeam(teamId) {
+  return tokenStore[teamId]?.event || null;
+}
 function getAllTokens() {
   if (!fs.existsSync(storePath)) return {};
   return JSON.parse(fs.readFileSync(storePath, "utf8"));
@@ -67,5 +78,7 @@ module.exports = {
   getTokenForTeam,
   saveChannelForTeam,
   getChannelForTeam,
+  getEventForTeam,
+  saveEventForTeam,
   getAllTokens,
 };

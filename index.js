@@ -7,9 +7,12 @@ const {
   saveTokenForTeam,
   saveChannelForTeam,
   getChannelForTeam,
+  getEventForTeam,
+  saveEventForTeam,
   saveNameForTeam,
   getNameForTeam,
   getAllTokens,
+  saveEventForTeam,
 } = require("./tokenStore");
 const schedulePath = path.join(__dirname, "schedule.json");
 const { App, ExpressReceiver } = require("@slack/bolt");
@@ -408,25 +411,29 @@ app.event("app_mention", async ({ event, client }) => {
 
 app.command("/set-event", async ({ command, ack, respond }) => {
   await ack();
+  const text = command.text;
+  const teamId = command.team_id;
+  const name = getNameForTeam(teamId);
   console.log(
     "recieved: set-event: ",
-    command.text,
+    text,
     " from ",
     command.user_name,
     " in ",
-    getNameForTeam(command.team_id)
+    name
   );
-  const text = command.text;
+
   let headers = { "X-TBA-Auth-Key": process.env.TBA_API_KEY };
-  console.log(headers);
   const response = await fetch(
     `https://www.thebluealliance.com/api/v3/event/${text}`,
     { headers }
   );
-  console.log("repspones: ", response);
-
-  const teamId = command.team_id;
-  const name = getNameForTeam(teamId);
+  console.log("repspones: ", response.body);
+  if (!response.ok) {
+    return respond(`Event ${text} was not found`);
+  } else {
+    saveEventForTeam(teamId);
+  }
 
   //saveChannelForTeam(teamId, channelId);
 
@@ -471,7 +478,8 @@ receiver.router.post("/webhook", async (req, res) => {
         if (
           schedule[i].start ==
             parseInt(payload.nowQueuing.match(/\d+$/)?.[0], 10) &&
-          schedule[i].team == team
+          schedule[i].team == team &&
+          team["event"] == req.body.eventKey
         ) {
           //ping starting people
           assignments = schedule[i].assignments;
