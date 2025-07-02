@@ -150,7 +150,7 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
       initial_comment:
         `Here is the scouting schedule!` +
         (command.text.includes("--ping")
-          ? ` Scouts: <@${users.join("> <@").slice(0, -2)}`
+          ? ` Scouts: <@${users.join("> <@").slice(0, -2)}>`
           : ""),
       file: buffer,
       filename: "schedule.png",
