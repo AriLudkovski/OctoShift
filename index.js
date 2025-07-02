@@ -280,6 +280,66 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
   respond(message);
 });
 
+app.command("/clear-schedule", async ({ command, ack, respond }) => {
+  await ack();
+
+  const text = command.text.trim();
+  let team = command.team_id;
+  console.log(
+    "Recieved command: clear-schedule: " + text + " from ",
+    command.user_name,
+    " in ",
+    getNameForTeam(team)
+  );
+
+  respond({
+    text: `⚠️Are you sure you want to delete the schedule for your team? This cannot be undone!⚠️`,
+    blocks: [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `⚠️ Are you sure you want to delete your teams *entire schedule*? This cannot be undone!⚠️`,
+        },
+      },
+      {
+        type: "actions",
+        elements: [
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "Yes, delete it",
+            },
+            style: "danger",
+            action_id: "confirm_delete_schedule",
+          },
+          {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "Cancel",
+            },
+            style: "primary",
+            action_id: "cancel_delete_schedule",
+          },
+        ],
+      },
+    ],
+  });
+});
+
+app.action("confirm_delete_schedule", async ({ ack, body, say, respond }) => {
+  await ack();
+
+  const teamId = body.team.id;
+
+  const schedule = loadSchedule();
+  const updatedSchedule = schedule.filter((b) => b.team != teamId);
+  saveSchedule(updatedSchedule);
+  respond({ replace_original: true, text: "Schedule has been deleted" });
+  say(`<@${body.user.id}> has deleted the entire schedule`);
+});
 app.command("/clear-block", async ({ command, ack, respond }) => {
   await ack();
 
@@ -330,7 +390,7 @@ app.command("/clear-block", async ({ command, ack, respond }) => {
               text: "Cancel",
             },
             style: "primary",
-            action_id: "cancel_delete_block",
+            action_id: "cancel_delete",
           },
         ],
       },
@@ -356,15 +416,10 @@ app.action("confirm_delete_block", async ({ ack, body, say, respond }) => {
     );
     saveSchedule(updatedSchedule);
     respond({ replace_original: true, text: "Block has been deleted" });
-    say(
-      `${await getDisplayName(
-        body.user.id,
-        teamId
-      )} has deleted block ${start}-${end}`
-    );
+    say(`<@${body.user.id}> has deleted block ${start}-${end}`);
   }
 });
-app.action("cancel_delete_block", async ({ ack, body, client, respond }) => {
+app.action("cancel_delete", async ({ ack, body, client, respond }) => {
   await ack();
   await respond({ text: "❌Canceled", replace_original: true });
 });
