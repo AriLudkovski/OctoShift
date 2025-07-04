@@ -466,7 +466,7 @@ app.command("/set-channel", async ({ command, ack, respond }) => {
   );
   await octoClient.chat.postMessage({
     channel: "C08UV1DRY1K",
-    text: `recieved: set-channel:from ${command.user_name} in ${getNameForTeam(
+    text: `recieved: set-channel: from ${command.user_name} in ${getNameForTeam(
       command.team_id
     )}`,
   });
