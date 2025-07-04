@@ -595,10 +595,9 @@ app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
     saveNameForTeam(teamId, teamName);
     console.log("OAuth success:", result);
     res.send("✅ Slack app installed successfully!");
-    const token = process.env.SLACK_BOT_TOKEN;
     await client.chat.postMessage({
       // The token you used to initialize your app
-      token,
+      token: getTokenForTeam("T03RFNLNJ2K"),
       channel: "C08UV1DRY1K",
       text: `${teamName} has installed Octoshift!`,
       // You could also use a blocks[] array to send richer content
