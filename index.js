@@ -12,7 +12,7 @@ const {
   getNameForTeam,
   getAllTokens,
 } = require("./tokenStore");
-const logChannel = logChannel;
+const logChannel = "D08UNPHLKJ7";
 const schedulePath = path.join(__dirname, "schedule.json");
 const { App, ExpressReceiver } = require("@slack/bolt");
 const express = require("express");
