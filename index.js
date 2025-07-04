@@ -16,7 +16,7 @@ const schedulePath = path.join(__dirname, "schedule.json");
 const { App, ExpressReceiver } = require("@slack/bolt");
 const express = require("express");
 const { WebClient } = require("@slack/web-api");
-
+const octoClient = new WebClient(getTokenForTeam("T03RFNLNJ2K"));
 const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
@@ -126,6 +126,12 @@ app.command("/print-schedule", async ({ command, ack, client, respond }) => {
     " in ",
     getNameForTeam(team)
   );
+  await octoClient.chat.postMessage({
+    channel: "C08UV1DRY1K",
+    text: `recieved: print schedule:from ${
+      command.user_name
+    } in ${getNameForTeam(team)}`,
+  });
   const schedule = loadSchedule();
   const hasMatches = schedule.some((block) => block.team === team);
   if (!hasMatches) return respond("Your team has no logged scouting schedule");
@@ -173,6 +179,12 @@ app.command("/scout-assign", async ({ command, ack, respond }) => {
     "in",
     getNameForTeam(teamId)
   );
+  await octoClient.chat.postMessage({
+    channel: "C08UV1DRY1K",
+    text: `recieved: set-event: ${text} from ${
+      command.user_name
+    } in ${getNameForTeam(teamId)}`,
+  });
   const args = command.text.trim().split(/\s+/);
   if (args.length !== 3) {
     return respond("Usage: `/scout-assign 1-10 blue_1 @user`");
@@ -231,6 +243,12 @@ app.command("/block-assign", async ({ command, ack, respond }) => {
     "in",
     getNameForTeam(command.team_id)
   );
+  await octoClient.chat.postMessage({
+    channel: "C08UV1DRY1K",
+    text: `recieved: block-assign: ${text} from ${
+      command.user_name
+    } in ${getNameForTeam(command.team_id)}`,
+  });
   const blockMatch = text.match(/block=(\d+)-(\d+)/);
   if (!blockMatch) {
     return respond("❌ Please specify a block using `block=10-20`.");
@@ -293,6 +311,13 @@ app.command("/clear-schedule", async ({ command, ack, respond }) => {
     getNameForTeam(team)
   );
 
+  await octoClient.chat.postMessage({
+    channel: "C08UV1DRY1K",
+    text: `recieved: clear-schedule: ${text} from ${
+      command.user_name
+    } in ${getNameForTeam(team)}`,
+  });
+
   respond({
     text: `⚠️Are you sure you want to delete the schedule for your team? This cannot be undone!⚠️`,
     blocks: [
@@ -352,6 +377,13 @@ app.command("/clear-block", async ({ command, ack, respond }) => {
     " in ",
     getNameForTeam(team)
   );
+
+  await octoClient.chat.postMessage({
+    channel: "C08UV1DRY1K",
+    text: `recieved: clear-block: ${text} from ${
+      command.user_name
+    } in ${getNameForTeam(team)}}`,
+  });
 
   const rangeMatch = text.match(/^(\d+)-(\d+)$/);
   if (!rangeMatch) {
@@ -432,6 +464,12 @@ app.command("/set-channel", async ({ command, ack, respond }) => {
     " in ",
     getNameForTeam(command.team_id)
   );
+  await octoClient.chat.postMessage({
+    channel: "C08UV1DRY1K",
+    text: `recieved: set-channel:from ${command.user_name} in ${getNameForTeam(
+      command.team_id
+    )}`,
+  });
   const teamId = command.team_id;
   const channelId = command.channel_id;
   const name = getNameForTeam(teamId);
@@ -453,6 +491,13 @@ app.event("app_mention", async ({ event, client }) => {
     " in ",
     getNameForTeam(event.team)
   );
+  await octoClient.chat.postMessage({
+    channel: "C08UV1DRY1K",
+    text: `mentioned by ${getDisplayName(
+      event.user,
+      event.team
+    )} in ${getNameForTeam(event.team)}`,
+  });
   const result = await client.chat.postMessage({
     token,
     channel: event.channel,
@@ -476,7 +521,10 @@ app.command("/set-event", async ({ command, ack, respond }) => {
     " in ",
     name
   );
-
+  await octoClient.chat.postMessage({
+    channel: "C08UV1DRY1K",
+    text: `recieved: set-event: ${text} from ${command.user_name} in ${name}`,
+  });
   let headers = { "X-TBA-Auth-Key": process.env.TBA_API_KEY };
   const response = await fetch(
     `https://www.thebluealliance.com/api/v3/event/${text}`,
@@ -596,12 +644,10 @@ app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
     saveNameForTeam(teamId, teamName);
     console.log("OAuth success:", result);
     res.send("✅ Slack app installed successfully!");
-    const octoClient = new WebClient(getTokenForTeam("T03RFNLNJ2K"));
+
     await octoClient.chat.postMessage({
-      // The token you used to initialize your app
       channel: "C08UV1DRY1K",
       text: `${teamName} has installed Octoshift!`,
-      // You could also use a blocks[] array to send richer content
     });
   } catch (error) {
     console.error("OAuth error:", error);
