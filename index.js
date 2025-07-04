@@ -595,6 +595,13 @@ app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
     saveNameForTeam(teamId, teamName);
     console.log("OAuth success:", result);
     res.send("✅ Slack app installed successfully!");
+    await app.client.chat.postMessage({
+      // The token you used to initialize your app
+      token: process.env.SLACK_BOT_TOKEN,
+      channel: C08UV1DRY1K,
+      text: `${teamName} has installed Octoshift!`,
+      // You could also use a blocks[] array to send richer content
+    });
   } catch (error) {
     console.error("OAuth error:", error);
     res.status(500).send("⚠️ OAuth failed.");
