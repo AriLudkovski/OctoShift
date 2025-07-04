@@ -492,7 +492,7 @@ app.event("app_mention", async ({ event, client }) => {
     getNameForTeam(event.team)
   );
   await octoClient.chat.postMessage({
-    channel: "D07QMMY491C",
+    channel: "D08UNPHLKJ7",
     text: `mentioned by ${getDisplayName(
       event.user,
       event.team
