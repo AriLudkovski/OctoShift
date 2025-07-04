@@ -596,7 +596,7 @@ app.receiver.router.get("/slack/oauth_redirect", async (req, res) => {
     console.log("OAuth success:", result);
     res.send("✅ Slack app installed successfully!");
     const token = process.env.SLACK_BOT_TOKEN;
-    await app.client.chat.postMessage({
+    await client.chat.postMessage({
       // The token you used to initialize your app
       token,
       channel: "C08UV1DRY1K",
